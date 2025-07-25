@@ -1,13 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
-    <link href="{{ asset('backend/assets/css/admin.css') }}" rel="stylesheet">
-</head>
-<body>
-    <h1>Backend Admin Funziona!</h1>
-    <p>Questa è la dashboard dell'amministrazione.</p>
-</body>
-</html>
+@extends('backend.layouts.app')
+
+@section('content')
+<div class="container-fluid py-4">
+    <div class="card">
+        <div class="card-body">
+            <h1 class="card-title">Benvenuto nella Dashboard Admin</h1>
+            <p class="card-text">Questa è la pagina principale dell'amministrazione.</p>
+        </div>
+    </div>
+</div>
+@endsection
