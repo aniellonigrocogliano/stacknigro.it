@@ -11,7 +11,7 @@
     <ul class="navbar-nav">
       <li class="nav-item">
         <a class="nav-link text-dark active" href="{{ url('/admin') }}">
-          <i class="material-symbols-rounded opacity-5">dashboard</i>
+          <i class="material-symbols-rounded opacity-5">Dashboard</i>
           <span class="nav-link-text ms-1">Dashboard</span>
         </a>
       </li>
