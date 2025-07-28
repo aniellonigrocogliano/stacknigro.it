@@ -10,17 +10,18 @@
   <div class="collapse navbar-collapse w-auto" id="sidenav-collapse-main">
     <ul class="navbar-nav">
       <li class="nav-item">
-        <a class="nav-link text-dark active" href="{{ url('/admin') }}">
-          <i class="material-symbols-rounded opacity-5">Dashboard</i>
-          <span class="nav-link-text ms-1">Dashboard</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">table_view</i>
-          <span class="nav-link-text ms-1">Tables</span>
-        </a>
-      </li>
+  <a class="nav-link text-dark {{ request()->is('admin') ? 'active' : '' }}" href="{{ url('/admin') }}">
+    <i class="material-symbols-rounded">dashboard_customize</i>
+    <span class="nav-link-text ms-1">Dashboard</span>
+  </a>
+</li>
+
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/hero') ? 'active' : '' }}" href="{{ url('/admin/hero') }}">
+    <i class="material-symbols-rounded">page_header</i>
+    <span class="nav-link-text ms-1">Hero</span>
+  </a>
+</li>
       <li class="nav-item">
         <a class="nav-link text-dark" href="#">
           <i class="material-symbols-rounded opacity-5">receipt_long</i>

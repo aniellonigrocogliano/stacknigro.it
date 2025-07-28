@@ -4,7 +4,12 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Stacknigro.it</title>
-
+    @php
+    $favicon = \App\Models\HeroSetting::first()?->favicon;
+@endphp
+@if($favicon)
+    <link rel="icon" type="image/png" href="{{ asset($favicon) }}">
+@endif
     @include('backend.layouts.includes.assets')
 </head>
 <body class="g-sidenav-show bg-gray-200">

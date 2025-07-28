@@ -23,6 +23,12 @@
 
   <!-- Main CSS File -->
   <link href="{{ asset('frontend/assets/css/main.css') }}" rel="stylesheet">
+  @php
+    $favicon = \App\Models\HeroSetting::first()?->favicon;
+@endphp
+@if($favicon)
+    <link rel="icon" type="image/png" href="{{ asset($favicon) }}">
+@endif
 </head>
 
 <body class="index-page">
