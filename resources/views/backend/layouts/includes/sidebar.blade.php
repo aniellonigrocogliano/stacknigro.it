@@ -34,46 +34,32 @@
     <span class="nav-link-text ms-1">Bio</span>
   </a>
 </li>
-      </li>
+
 <li class="nav-item">
   <a class="nav-link text-dark {{ request()->is('admin/projects') ? 'active' : '' }}" href="{{ url('admin/projects') }}">
     <i class="material-symbols-rounded">work_update</i>
     <span class="nav-link-text ms-1">Proggetti</span>
   </a>
 </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">notifications</i>
-          <span class="nav-link-text ms-1">Notifications</span>
-        </a>
-      </li>
-      <li class="nav-item mt-3">
-        <h6 class="ps-4 ms-2 text-uppercase text-xs text-dark font-weight-bolder opacity-5">Account pages</h6>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">person</i>
-          <span class="nav-link-text ms-1">Profile</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">login</i>
-          <span class="nav-link-text ms-1">Sign In</span>
-        </a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">assignment</i>
-          <span class="nav-link-text ms-1">Sign Up</span>
-        </a>
-      </li>
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/messages') ? 'active' : '' }}" href="{{ url('admin/messages') }}">
+    <i class="material-symbols-rounded">mail</i>
+    <span class="nav-link-text ms-1">Messaggi</span>
+  </a>
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/contacts') ? 'active' : '' }}" href="{{ url('admin/contacts') }}">
+    <i class="material-symbols-rounded">contact_mail</i>
+    <span class="nav-link-text ms-1">Contatti</span>
+  </a>
+</li>
     </ul>
   </div>
   <div class="sidenav-footer position-absolute w-100 bottom-0">
     <div class="mx-3">
-      <a class="btn btn-outline-dark mt-4 w-100" href="https://www.creative-tim.com/learning-lab/bootstrap/overview/material-dashboard?ref=sidebarfree" type="button">Documentation</a>
-      <a class="btn bg-gradient-dark w-100" href="https://www.creative-tim.com/product/material-dashboard-pro?ref=sidebarfree" type="button">Upgrade to pro</a>
+     <form action="{{ route('logout') }}" method="POST">
+    @csrf
+    <button type="submit" class="btn btn-danger mt-4 w-100">Logout</button>
+</form>
     </div>
   </div>
 </aside>

@@ -8,6 +8,9 @@ use App\Http\Controllers\HeroController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\BioController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\MessageController;
+use App\Http\Controllers\ContactController;
+
 
 // Frontend - Registra le visite
 Route::get('/', function () {
@@ -46,4 +49,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
     Route::post('/admin/projects', [ProjectController::class, 'store'])->name('admin.projects.store');
     Route::delete('/admin/projects/{project}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+
+    // ✅ Rotte Messaggi
+    Route::get('/admin/messages', [MessageController::class, 'index'])->name('admin.messages.index');
+    Route::delete('/admin/messages/{id}', [MessageController::class, 'destroy'])->name('admin.messages.destroy');
+
+    // ✅ Rotte Messaggi
+    Route::get('/admin/contacts', [ContactController::class, 'index'])->name('admin.contacts');
+    Route::post('/admin/contacts', [ContactController::class, 'update']);
+
+
 });
