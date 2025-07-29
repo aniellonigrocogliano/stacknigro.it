@@ -13,7 +13,9 @@
 
 <!-- Nucleo Icons -->
 <link href="{{ asset('assets-admin/css/nucleo-icons.css') }}" rel="stylesheet" />
-<link href="{{ asset('assets-admin/css/nucleo-svg.css') }}" rel="stylesheet" />
+<link href="{{ asset('assets-admin/css/nucleo-svg.css') }}"  />
+<!-- Font Awesome CDN -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
 <!-- Font Awesome Icons -->
 <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
@@ -29,3 +31,4 @@
 <script src="{{ asset('assets-admin/js/core/bootstrap.min.js') }}"></script>
 <script src="{{ asset('assets-admin/js/plugins/perfect-scrollbar.min.js') }}"></script>
 <script src="{{ asset('assets-admin/js/plugins/smooth-scrollbar.min.js') }}"></script>
+

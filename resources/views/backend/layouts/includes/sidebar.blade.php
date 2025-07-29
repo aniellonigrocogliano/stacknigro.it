@@ -23,23 +23,24 @@
   </a>
 </li>
       <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">receipt_long</i>
-          <span class="nav-link-text ms-1">Billing</span>
+        <a class="nav-link text-dark" {{ request()->is('admin/skills') ? 'active' : '' }}" href="{{ url('/admin/skills') }}">
+          <i class="material-symbols-rounded ">person_play</i>
+          <span class="nav-link-text ms-1">Skills</span>
         </a>
       </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">view_in_ar</i>
-          <span class="nav-link-text ms-1">Virtual Reality</span>
-        </a>
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/bio') ? 'active' : '' }}" href="{{ url('/admin/bio') }}">
+    <i class="material-symbols-rounded">frame_person</i>
+    <span class="nav-link-text ms-1">Bio</span>
+  </a>
+</li>
       </li>
-      <li class="nav-item">
-        <a class="nav-link text-dark" href="#">
-          <i class="material-symbols-rounded opacity-5">format_textdirection_r_to_l</i>
-          <span class="nav-link-text ms-1">RTL</span>
-        </a>
-      </li>
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/projects') ? 'active' : '' }}" href="{{ url('admin/projects') }}">
+    <i class="material-symbols-rounded">work_update</i>
+    <span class="nav-link-text ms-1">Proggetti</span>
+  </a>
+</li>
       <li class="nav-item">
         <a class="nav-link text-dark" href="#">
           <i class="material-symbols-rounded opacity-5">notifications</i>
