@@ -11,8 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Aggiungiamo il middleware del banner cookie
+        $middleware->append(
+            \Statikbe\CookieConsent\CookieConsentMiddleware::class
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
-    })->create();
+    })
+    ->create();

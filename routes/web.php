@@ -10,18 +10,13 @@ use App\Http\Controllers\BioController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ContactController;
+use App\Http\Controllers\FrontendController;
 
 
 // Frontend - Registra le visite
-Route::get('/', function () {
-    Visit::create([
-        'ip_address' => request()->ip(),
-        'user_agent' => request()->header('User-Agent'),
-    ]);
-
-    return view('frontend.index');
-});
-
+Route::get('/', [FrontendController::class, 'index'])->name('homepage');
+Route::view('/privacy','frontend.privacy')->name('privacy');
+Route::post('/contact/send', [FrontendController::class, 'sendMessage'])->name('contact.send');
 // Login Admin
 Route::get('/admin/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/admin/login', [LoginController::class, 'login']);

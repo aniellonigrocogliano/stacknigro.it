@@ -23,7 +23,7 @@
   </a>
 </li>
       <li class="nav-item">
-        <a class="nav-link text-dark" {{ request()->is('admin/skills') ? 'active' : '' }}" href="{{ url('/admin/skills') }}">
+        <a class="nav-link text-dark {{ request()->is('admin/skills') ? 'active' : '' }}" href="{{ url('/admin/skills') }}">
           <i class="material-symbols-rounded ">person_play</i>
           <span class="nav-link-text ms-1">Skills</span>
         </a>
