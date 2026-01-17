@@ -7,6 +7,7 @@
 
     {{-- Bootslander CSS --}}
     <link rel="stylesheet" href="{{ asset('themes/bootslander/css/main.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
 </head>
 <body>
 
