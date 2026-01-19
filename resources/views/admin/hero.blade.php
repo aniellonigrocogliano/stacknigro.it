@@ -3,16 +3,16 @@
 @section('title', 'Hero + Logo')
 
 @section('content')
-<div class="container-fluid py-4">
+<div class="py-4 container-fluid">
 
   @if(session('success'))
-    <div class="alert alert-success text-white">
+    <div class="text-white alert alert-success">
       {{ session('success') }}
     </div>
   @endif
 
   @if ($errors->any())
-    <div class="alert alert-danger text-white">
+    <div class="text-white alert alert-danger">
       <ul class="mb-0">
         @foreach ($errors->all() as $error)
           <li>{{ $error }}</li>
@@ -22,11 +22,19 @@
   @endif
 
   <div class="card">
-    <div class="card-header pb-0">
+    <div class="pb-0 card-header">
       <h6 class="mb-0">Hero + Logo</h6>
-      <p class="text-sm mb-0">Qui modifichi titolo, sottotitolo e carichi un solo logo che aggiorna anche la favicon.</p>
+      <p class="mb-0 text-sm">Qui modifichi titolo, sottotitolo e carichi un solo logo che aggiorna anche la favicon.</p>
     </div>
-
+@if ($errors->any())
+  <div class="alert alert-danger">
+    <ul class="mb-0">
+      @foreach ($errors->all() as $error)
+        <li>{{ $error }}</li>
+      @endforeach
+    </ul>
+  </div>
+@endif
     <div class="card-body">
       <form method="POST" action="{{ url('/admin/hero') }}" enctype="multipart/form-data">
         @csrf
@@ -56,7 +64,7 @@
 
         @if($logoUrl)
           <div class="mb-3">
-            <div class="d-flex align-items-center gap-3">
+            <div class="gap-3 d-flex align-items-center">
               <div>
                 <p class="mb-1 text-sm">Logo attuale</p>
                 <img src="{{ $logoUrl }}" style="height:60px;">
@@ -71,7 +79,7 @@
           </div>
         @endif
 
-        <button type="submit" class="btn bg-gradient-dark mb-0">Salva</button>
+        <button type="submit" class="mb-0 btn bg-gradient-dark">Salva</button>
       </form>
     </div>
   </div>

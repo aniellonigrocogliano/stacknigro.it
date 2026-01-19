@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\SiteSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use App\Models\SiteSetting;
 
 class SiteSettingsController extends Controller
 {
@@ -22,42 +22,40 @@ class SiteSettingsController extends Controller
     }
 
     public function update(Request $request)
-    {
-        $settings = $this->settings();
+{
+    $settings = SiteSetting::firstOrCreate([]);
 
-        $data = $request->validate([
-            'hero_title' => ['nullable', 'string', 'max:255'],
-            'hero_subtitle' => ['nullable', 'string', 'max:255'],
-            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:2048'],
-        ]);
+    $data = $request->validate([
+        'hero_title' => ['nullable', 'string', 'max:255'],
+        'hero_subtitle' => ['nullable', 'string', 'max:255'],
+        'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:5120'],
+    ]);
 
-        $settings->hero_title = $data['hero_title'] ?? $settings->hero_title;
-        $settings->hero_subtitle = $data['hero_subtitle'] ?? $settings->hero_subtitle;
+    $settings->hero_title = $data['hero_title'] ?? null;
+    $settings->hero_subtitle = $data['hero_subtitle'] ?? null;
 
-        if ($request->hasFile('logo')) {
+    if ($request->hasFile('logo')) {
+        // 1) salva logo
+        $logoPath = $request->file('logo')->store('site', 'public'); // site/xxxx.png
 
-            // elimina vecchi
-            if ($settings->logo_path) Storage::disk('public')->delete($settings->logo_path);
-            if ($settings->favicon_path) Storage::disk('public')->delete($settings->favicon_path);
+        // 2) genera favicon 32x32 PNG
+        $faviconRelPath = 'site/favicon-32.png';
+        $faviconAbsPath = storage_path('app/public/' . $faviconRelPath);
 
-            // salva logo originale
-            $logoPath = $request->file('logo')->store('site', 'public');
+        $manager = new ImageManager(new Driver());
+        $img = $manager->read(Storage::disk('public')->path($logoPath));
 
-            // genera favicon 32x32 PNG
-            $faviconRelPath = 'site/favicon-32.png';
-            $faviconAbsPath = storage_path('app/public/' . $faviconRelPath);
-$manager = new ImageManager(new Driver());
+        // Nota: toPng() = sempre favicon png
+        $img->resize(32, 32)->toPng()->save($faviconAbsPath);
 
-$manager->read(Storage::disk('public')->path($logoPath))
-    ->resize(32, 32)
-    ->save($faviconAbsPath);
-            $settings->logo_path = $logoPath;
-            $settings->favicon_path = $faviconRelPath;
-        }
-
-        $settings->save();
-
-        return back()->with('success', 'Hero e logo aggiornati!');
+        // 3) salva path nel DB
+        $settings->logo_path = $logoPath;
+        $settings->favicon_path = $faviconRelPath;
     }
+
+    $settings->save();
+
+    return back()->with('success', 'Salvato!');
 }
 
+}
