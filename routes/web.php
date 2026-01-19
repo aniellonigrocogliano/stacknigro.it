@@ -14,15 +14,21 @@ Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth');
 
+Route::post('/admin/tinymce/upload', [SiteSettingsController::class, 'tinymceUpload'])
+    ->middleware('auth')
+    ->name('admin.tinymce.upload');
+
 Route::middleware('auth')->prefix('admin')->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
-
+    Route::post('/tinymce/upload',
+        [SiteSettingsController::class, 'tinymceUpload']
+    )->name('admin.tinymce.upload');
     Route::get('/hero', [SiteSettingsController::class, 'edit']);
 Route::post('/hero', [SiteSettingsController::class, 'update']);
  Route::get('/bio', [SiteSettingsController::class, 'editBio'])->name('admin.bio.edit');
     Route::post('/bio', [SiteSettingsController::class, 'updateBio'])->name('admin.bio.update');
 
-  
+
     Route::view('/skills', 'admin.skills');
     Route::view('/contacts', 'admin.contacts');
     Route::view('/projects', 'admin.projects');

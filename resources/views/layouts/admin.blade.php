@@ -10,6 +10,8 @@
   <link href="{{ asset('themes/admin/css/nucleo-svg.css') }}" rel="stylesheet" />
   <link href="{{ asset('themes/admin/css/material-dashboard.min.css') }}" rel="stylesheet" />
   <link rel="stylesheet" href="{{ asset('assets/fontawesome/css/all.min.css') }}">
+  <link rel="icon" type="image/png"
+        href="{{ $site?->favicon_path ? asset('storage/'.$site->favicon_path) : asset('themes/bootslander/img/favicon.png') }}">
 </head>
 
 <body class="bg-gray-200 g-sidenav-show">

@@ -13,7 +13,7 @@
 @if($preview)
   {!! $preview !!}
   @if($hasMore)
-    <a href="{{ route('bio') }}">Continua a leggere</a>
+    <a href="{{ route('public.bio') }}">Continua a leggere</a>
   @endif
 @endif
 </div>

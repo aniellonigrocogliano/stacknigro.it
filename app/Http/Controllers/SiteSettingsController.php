@@ -76,4 +76,16 @@ public function updateBio(Request $request)
 
     return back()->with('success', 'Bio salvata!');
 }
+public function tinymceUpload(Request $request)
+{
+    $request->validate([
+        'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,gif', 'max:5120'], // 5MB
+    ]);
+
+    $path = $request->file('file')->store('tinymce', 'public');
+
+    return response()->json([
+        'location' => asset('storage/' . $path),
+    ]);
+}
 }
