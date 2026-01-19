@@ -7,11 +7,11 @@
        id="iconSidenav"></i>
 
     <a class="px-4 py-3 m-0 navbar-brand" href="{{ url('/admin') }}">
-      <img src="{{ asset('themes/admin/img/logo-ct-dark.png') }}"
-           class="navbar-brand-img"
-           width="26"
-           height="26"
-           alt="logo">
+<img src="{{ $site?->logo_path ? asset('storage/'.$site->logo_path) : asset('themes/admin/img/logo-ct-dark.png') }}"
+     class="navbar-brand-img"
+     width="26"
+     height="26"
+     alt="logo">
       <span class="text-sm ms-1 text-dark">Stacknigro Admin</span>
     </a>
   </div>
