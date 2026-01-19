@@ -19,8 +19,10 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::get('/hero', [SiteSettingsController::class, 'edit']);
 Route::post('/hero', [SiteSettingsController::class, 'update']);
+ Route::get('/bio', [SiteSettingsController::class, 'editBio'])->name('admin.bio.edit');
+    Route::post('/bio', [SiteSettingsController::class, 'updateBio'])->name('admin.bio.update');
 
-    Route::view('/bio', 'admin.bio');
+  
     Route::view('/skills', 'admin.skills');
     Route::view('/contacts', 'admin.contacts');
     Route::view('/projects', 'admin.projects');

@@ -27,6 +27,6 @@
   <script src="{{ asset('themes/admin/js/core/bootstrap.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/plugins/perfect-scrollbar.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/material-dashboard.min.js') }}"></script>
-
+@stack('scripts')
 </body>
 </html>

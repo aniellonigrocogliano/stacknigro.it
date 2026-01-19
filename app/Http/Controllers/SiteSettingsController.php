@@ -57,5 +57,23 @@ class SiteSettingsController extends Controller
 
     return back()->with('success', 'Salvato!');
 }
+public function editBio()
+{
+    $settings = SiteSetting::firstOrCreate([]);
+    return view('admin.bio', compact('settings'));
+}
 
+public function updateBio(Request $request)
+{
+    $settings = SiteSetting::firstOrCreate([]);
+
+    $data = $request->validate([
+        'bio' => ['nullable', 'string'],
+    ]);
+
+    $settings->bio = $data['bio'] ?? null;
+    $settings->save();
+
+    return back()->with('success', 'Bio salvata!');
+}
 }
