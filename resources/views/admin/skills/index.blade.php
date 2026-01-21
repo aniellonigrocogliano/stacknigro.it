@@ -60,8 +60,7 @@
 
                   <td class="align-middle">
                     @if($skill->color)
-                      <span class="badge"
-                            style="background: {{ $skill->color }}; color: #fff;">
+                      <span class="badge" style="background: {{ $skill->color }}; color: #fff;">
                         {{ $skill->color }}
                       </span>
                     @else
@@ -82,16 +81,19 @@
                       <i class="fa fa-pencil" aria-hidden="true"></i>
                     </a>
 
-                    <form action="{{ route('admin.skills.destroy', $skill) }}"
-                          method="POST"
-                          class="d-inline"
-                          onsubmit="return confirm('Eliminare questa skill?');">
-                      @csrf
-                      @method('DELETE')
-                      <button class="px-2 mb-0 btn btn-link text-danger" type="submit" title="Elimina">
-                        <i class="fa fa-trash" aria-hidden="true"></i>
-                      </button>
-                    </form>
+                    {{-- DELETE trigger: apre modal --}}
+                    <button
+                      type="button"
+                      class="px-2 mb-0 btn btn-link text-danger"
+                      title="Elimina"
+                      data-bs-toggle="modal"
+                      data-bs-target="#confirmDeleteModal"
+                      data-action="{{ route('admin.skills.destroy', $skill) }}"
+                      data-title="Eliminare skill?"
+                      data-body="Vuoi eliminare la skill '{{ $skill->name }}'? Questa azione non può essere annullata."
+                    >
+                      <i class="fa fa-trash" aria-hidden="true"></i>
+                    </button>
                   </td>
                 </tr>
               @empty
@@ -110,4 +112,53 @@
     </div>
   </div>
 </div>
+
+{{-- MODAL CONFERMA ELIMINAZIONE (TEMPLATE) --}}
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title font-weight-normal" id="confirmDeleteTitle">Conferma eliminazione</h5>
+        <button type="button" class="btn-close text-dark" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="confirmDeleteBody">
+        Sei sicuro di voler eliminare questo elemento?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">Annulla</button>
+
+        <form method="POST" id="confirmDeleteForm">
+          @csrf
+          @method('DELETE')
+          <button type="submit" class="btn bg-gradient-danger">Elimina</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('confirmDeleteModal');
+    if (!modalEl) return;
+
+    modalEl.addEventListener('show.bs.modal', (event) => {
+      const button = event.relatedTarget;
+      if (!button) return;
+
+      const action = button.getAttribute('data-action');
+      const title  = button.getAttribute('data-title') || 'Conferma eliminazione';
+      const body   = button.getAttribute('data-body')  || 'Sei sicuro?';
+
+      const form = document.getElementById('confirmDeleteForm');
+      form.action = action;
+
+      document.getElementById('confirmDeleteTitle').innerText = title;
+      document.getElementById('confirmDeleteBody').innerText  = body;
+    });
+  });
+</script>
+@endpush
+

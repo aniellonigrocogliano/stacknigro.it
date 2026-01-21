@@ -74,7 +74,39 @@
           <span class="nav-link-text ms-1">Progetti</span>
         </a>
       </li>
+{{-- PREVENTIVI (CONFIG PREVENTIVATORE) --}}
+      <li class="mt-3 nav-item">
+        <h6 class="text-xs ps-4 ms-2 text-uppercase text-dark font-weight-bolder opacity-5">
+          Preventivi
+        </h6>
+      </li>
 
+      {{-- LIVELLI --}}
+      <li class="nav-item">
+        <a class="nav-link text-dark {{ request()->is('admin/quote-levels*') ? 'active' : '' }}"
+           href="{{ url('/admin/quote-levels') }}">
+          <i class="fa-solid fa-layer-group opacity-5"></i>
+          <span class="nav-link-text ms-1">Livelli</span>
+        </a>
+      </li>
+
+      {{-- OPZIONI --}}
+      <li class="nav-item">
+        <a class="nav-link text-dark {{ request()->is('admin/quote-options*') ? 'active' : '' }}"
+           href="{{ url('/admin/quote-options') }}">
+          <i class="fa-solid fa-list-check opacity-5"></i>
+          <span class="nav-link-text ms-1">Opzioni</span>
+        </a>
+      </li>
+
+      {{-- REGOLE --}}
+      <li class="nav-item">
+        <a class="nav-link text-dark {{ request()->is('admin/quote-rules*') ? 'active' : '' }}"
+           href="{{ url('/admin/quote-rules') }}">
+          <i class="fa-solid fa-diagram-project opacity-5"></i>
+          <span class="nav-link-text ms-1">Regole</span>
+        </a>
+      </li>
       {{-- ACCOUNT --}}
       <li class="mt-3 nav-item">
         <h6 class="text-xs ps-4 ms-2 text-uppercase text-dark font-weight-bolder opacity-5">

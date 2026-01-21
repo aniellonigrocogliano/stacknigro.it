@@ -24,11 +24,52 @@
     @yield('content')
   </main>
 
+  {{-- MODAL GLOBALE AVVISI (SUCCESS / ERROR) --}}
+  <div class="modal fade" id="alertModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title font-weight-normal" id="alertModalTitle">Avviso</h5>
+          <button type="button" class="btn-close text-dark" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="alertModalBody"></div>
+        <div class="modal-footer">
+          <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">
+            Chiudi
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   {{-- CORE JS (SOLO QUI, NON NEL LOGIN) --}}
   <script src="{{ asset('themes/admin/js/core/popper.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/core/bootstrap.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/plugins/perfect-scrollbar.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/material-dashboard.min.js') }}"></script>
-@stack('scripts')
+
+  {{-- AUTO-OPEN MODAL DA SESSION --}}
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const modalEl = document.getElementById('alertModal');
+      if (!modalEl || typeof bootstrap === 'undefined') return;
+
+      const modal = new bootstrap.Modal(modalEl);
+
+      @if(session('success'))
+        document.getElementById('alertModalTitle').innerText = 'Operazione completata';
+        document.getElementById('alertModalBody').innerText = @json(session('success'));
+        modal.show();
+      @endif
+
+      @if(session('error'))
+        document.getElementById('alertModalTitle').innerText = 'Errore';
+        document.getElementById('alertModalBody').innerText = @json(session('error'));
+        modal.show();
+      @endif
+    });
+  </script>
+
+  @stack('scripts')
 </body>
 </html>
