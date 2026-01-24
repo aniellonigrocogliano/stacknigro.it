@@ -4,30 +4,33 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuoteLevel extends Model
 {
-  protected $fillable = [
-    'level','title','selection_type','is_required','is_active','sort_order'
-  ];
+    protected $table = 'quote_levels';
 
-  protected $casts = [
-    'is_required' => 'boolean',
-    'is_active' => 'boolean',
-  ];
+    protected $fillable = [
+        'level',
+        'name',
+        'sort_order',
+        'selection_type',
+        'min_select',
+        'max_select',
+        'is_active',
+    ];
 
-  public function options(): BelongsToMany
-  {
-    return $this->belongsToMany(QuoteOption::class, 'quote_level_option')
-      ->withPivot(['sort_order','is_active'])
-      ->withTimestamps()
-      ->orderBy('quote_level_option.sort_order')
-      ->orderBy('quote_level_option.id');
-  }
+    protected $casts = [
+        'level' => 'integer',
+        'sort_order' => 'integer',
+        'min_select' => 'integer',
+        'max_select' => 'integer',
+        'is_active' => 'boolean',
+    ];
 
-  public function rulesAsTrigger(): HasMany
-  {
-    return $this->hasMany(QuoteRule::class, 'trigger_level_id');
-  }
+    public function options(): BelongsToMany
+    {
+        return $this->belongsToMany(QuoteOption::class, 'quote_level_option', 'quote_level_id', 'quote_option_id')
+            ->withPivot(['is_required', 'is_hidden_by_default', 'sort_order'])
+            ->withTimestamps();
+    }
 }

@@ -5,9 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProjectController;
-use App\Http\Controllers\QuoteLevelController;
-use App\Http\Controllers\QuoteOptionController;
-use App\Http\Controllers\QuoteRuleController;
+use App\Http\Controllers\QuoteAdminController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,7 +22,7 @@ Route::get('/privacy-policy', fn() => view('public.privacy'))->name('public.priv
 
 /*
 |--------------------------------------------------------------------------
-| AUTH (FUORI DA middleware auth)
+| AUTH
 |--------------------------------------------------------------------------
 */
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -40,30 +38,17 @@ Route::middleware('auth')->prefix('admin')->group(function () {
 
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
 
-    // HERO + LOGO
-    Route::get('/hero', [SiteSettingsController::class, 'edit'])->name('admin.hero.edit');
-    Route::post('/hero', [SiteSettingsController::class, 'update'])->name('admin.hero.update');
+    // SITE SETTINGS
+    Route::get('/settings', [SiteSettingsController::class, 'index'])->name('admin.settings.index');
+    Route::put('/settings', [SiteSettingsController::class, 'update'])->name('admin.settings.update');
 
-    // BIO
-    Route::get('/bio', [SiteSettingsController::class, 'editBio'])->name('admin.bio.edit');
-    Route::post('/bio', [SiteSettingsController::class, 'updateBio'])->name('admin.bio.update');
-
-    // TinyMCE upload
-    Route::post('/tinymce/upload', [SiteSettingsController::class, 'tinymceUpload'])
-        ->name('admin.tinymce.upload');
-
-    // SKILLS CRUD
+    // SKILLS
     Route::get('/skills', [SkillController::class, 'index'])->name('admin.skills.index');
-    Route::get('/skills/create', [SkillController::class, 'create'])->name('admin.skills.create');
     Route::post('/skills', [SkillController::class, 'store'])->name('admin.skills.store');
-    Route::get('/skills/{skill}/edit', [SkillController::class, 'edit'])->name('admin.skills.edit');
     Route::put('/skills/{skill}', [SkillController::class, 'update'])->name('admin.skills.update');
     Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('admin.skills.destroy');
 
-    // CONTACTS
-    Route::view('/contacts', 'admin.contacts')->name('admin.contacts');
-
-    // PROJECTS CRUD
+    // PROJECTS
     Route::get('/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('admin.projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('admin.projects.store');
@@ -71,39 +56,28 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('admin.projects.update');
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
 
-    // IMMAGINI PROGETTI
-    Route::delete('/project-images/{image}', [ProjectController::class, 'deleteImage'])
-        ->name('admin.project-images.destroy');
-    Route::post('/projects/{project}/images/sort', [ProjectController::class, 'sortImages'])
-  ->name('admin.project-images.sort');
-    Route::post('/project-images/{image}/cover', [ProjectController::class, 'setCover'])
-        ->name('admin.project-images.cover');
+    /*
+    |--------------------------------------------------------------------------
+    | PREVENTIVI (pagina unica)
+    |--------------------------------------------------------------------------
+    */
+Route::get('/quotes', [QuoteAdminController::class, 'index'])->name('quotes.index');
 
-    // PREVENTIVATORE - CONFIG
-Route::get('/quote-levels', [QuoteLevelController::class, 'index'])->name('admin.quote-levels.index');
-Route::get('/quote-levels/create', [QuoteLevelController::class, 'create'])->name('admin.quote-levels.create');
-Route::post('/quote-levels', [QuoteLevelController::class, 'store'])->name('admin.quote-levels.store');
-Route::get('/quote-levels/{quoteLevel}/edit', [QuoteLevelController::class, 'edit'])->name('admin.quote-levels.edit');
-Route::put('/quote-levels/{quoteLevel}', [QuoteLevelController::class, 'update'])->name('admin.quote-levels.update');
-Route::delete('/quote-levels/{quoteLevel}', [QuoteLevelController::class, 'destroy'])->name('admin.quote-levels.destroy');
+    // LIVELLI (inline)
+    Route::put('/quotes/levels/{level}', [QuoteAdminController::class, 'updateLevel'])->name('quotes.levels.update');
 
-// sync opzioni livello (pivot)
-Route::put('/quote-levels/{quoteLevel}/options', [QuoteLevelController::class, 'syncOptions'])
-  ->name('admin.quote-levels.options.sync');
+    // OPZIONI
+    Route::post('/quotes/options', [QuoteAdminController::class, 'storeOption'])->name('quotes.options.store');
+    Route::post('/quotes/options/attach', [QuoteAdminController::class, 'attachOption'])->name('quotes.options.attach');
+    Route::put('/quotes/options/{option}', [QuoteAdminController::class, 'updateOption'])->name('quotes.options.update');
+    Route::delete('/quotes/options/{option}', [QuoteAdminController::class, 'destroyOption'])->name('quotes.options.destroy');
 
-// OPZIONI
-Route::get('/quote-options', [QuoteOptionController::class, 'index'])->name('admin.quote-options.index');
-Route::get('/quote-options/create', [QuoteOptionController::class, 'create'])->name('admin.quote-options.create');
-Route::post('/quote-options', [QuoteOptionController::class, 'store'])->name('admin.quote-options.store');
-Route::get('/quote-options/{quoteOption}/edit', [QuoteOptionController::class, 'edit'])->name('admin.quote-options.edit');
-Route::put('/quote-options/{quoteOption}', [QuoteOptionController::class, 'update'])->name('admin.quote-options.update');
-Route::delete('/quote-options/{quoteOption}', [QuoteOptionController::class, 'destroy'])->name('admin.quote-options.destroy');
+    // PIVOT livello <-> opzione
+    Route::put('/quotes/levels/{level}/options/{option}', [QuoteAdminController::class, 'updatePivot'])->name('quotes.levels.options.update');
+    Route::delete('/quotes/levels/{level}/options/{option}', [QuoteAdminController::class, 'detachOption'])->name('quotes.levels.options.detach');
 
-// REGOLE
-Route::get('/quote-rules', [QuoteRuleController::class, 'index'])->name('admin.quote-rules.index');
-Route::get('/quote-rules/create', [QuoteRuleController::class, 'create'])->name('admin.quote-rules.create');
-Route::post('/quote-rules', [QuoteRuleController::class, 'store'])->name('admin.quote-rules.store');
-Route::get('/quote-rules/{quoteRule}/edit', [QuoteRuleController::class, 'edit'])->name('admin.quote-rules.edit');
-Route::put('/quote-rules/{quoteRule}', [QuoteRuleController::class, 'update'])->name('admin.quote-rules.update');
-Route::delete('/quote-rules/{quoteRule}', [QuoteRuleController::class, 'destroy'])->name('admin.quote-rules.destroy');
+    // REGOLE
+    Route::post('/quotes/rules', [QuoteAdminController::class, 'storeRule'])->name('quotes.rules.store');
+    Route::delete('/quotes/rules/{quoteRule}', [QuoteAdminController::class, 'destroyRule'])->name('quotes.rules.destroy');
 });
+

@@ -8,23 +8,33 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class QuoteOption extends Model
 {
-  protected $fillable = [
-    'label','help_text','hours_min','hours_max','price_min','price_max','is_active'
-  ];
+    protected $table = 'quote_options';
 
-  protected $casts = [
-    'is_active' => 'boolean',
-  ];
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'hours',
+        'is_default',
+        'is_active',
+    ];
 
-  public function levels(): BelongsToMany
-  {
-    return $this->belongsToMany(QuoteLevel::class, 'quote_level_option')
-      ->withPivot(['sort_order','is_active'])
-      ->withTimestamps();
-  }
+    protected $casts = [
+        'price' => 'decimal:2',
+        'hours' => 'integer',
+        'is_default' => 'boolean',
+        'is_active' => 'boolean',
+    ];
 
-  public function rulesAsTrigger(): HasMany
-  {
-    return $this->hasMany(QuoteRule::class, 'trigger_option_id');
-  }
+    public function levels(): BelongsToMany
+    {
+        return $this->belongsToMany(QuoteLevel::class, 'quote_level_option', 'quote_option_id', 'quote_level_id')
+            ->withPivot(['is_required', 'is_hidden_by_default', 'sort_order'])
+            ->withTimestamps();
+    }
+
+    public function triggerRules(): HasMany
+    {
+        return $this->hasMany(QuoteRule::class, 'trigger_option_id');
+    }
 }
