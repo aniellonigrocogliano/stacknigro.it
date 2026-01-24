@@ -6,6 +6,8 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QuoteAdminController;
+use App\Http\Controllers\InboxController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,7 +38,8 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 */
 Route::middleware('auth')->prefix('admin')->group(function () {
 
-    Route::view('/', 'admin.dashboard')->name('admin.dashboard');
+    // ✅ prima era Route::view('/', 'admin.dashboard') -> non passava $inboxUnread
+    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // SITE SETTINGS
     Route::get('/settings', [SiteSettingsController::class, 'index'])->name('admin.settings.index');
@@ -61,7 +64,7 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     | PREVENTIVI (pagina unica)
     |--------------------------------------------------------------------------
     */
-Route::get('/quotes', [QuoteAdminController::class, 'index'])->name('quotes.index');
+    Route::get('/quotes', [QuoteAdminController::class, 'index'])->name('quotes.index');
 
     // LIVELLI (inline)
     Route::put('/quotes/levels/{level}', [QuoteAdminController::class, 'updateLevel'])->name('quotes.levels.update');
@@ -79,5 +82,25 @@ Route::get('/quotes', [QuoteAdminController::class, 'index'])->name('quotes.inde
     // REGOLE
     Route::post('/quotes/rules', [QuoteAdminController::class, 'storeRule'])->name('quotes.rules.store');
     Route::delete('/quotes/rules/{quoteRule}', [QuoteAdminController::class, 'destroyRule'])->name('quotes.rules.destroy');
-});
 
+    /*
+    |--------------------------------------------------------------------------
+    | INBOX
+    |--------------------------------------------------------------------------
+    */
+    Route::get('/inbox', [InboxController::class, 'index'])->name('admin.inbox.index');
+    Route::get('/inbox/archive', [InboxController::class, 'archive'])->name('admin.inbox.archive');
+    Route::get('/inbox/trash', [InboxController::class, 'trash'])->name('admin.inbox.trash');
+
+    Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->name('admin.inbox.show');
+
+    Route::patch('/inbox/{conversation}/read', [InboxController::class, 'markRead'])->name('admin.inbox.read');
+    Route::patch('/inbox/{conversation}/unread', [InboxController::class, 'markUnread'])->name('admin.inbox.unread');
+
+    Route::patch('/inbox/{conversation}/archive', [InboxController::class, 'doArchive'])->name('admin.inbox.doArchive');
+    Route::patch('/inbox/{conversation}/unarchive', [InboxController::class, 'unarchive'])->name('admin.inbox.unarchive');
+
+    Route::delete('/inbox/{conversation}', [InboxController::class, 'destroy'])->name('admin.inbox.destroy');
+
+    Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->name('admin.inbox.reply');
+});

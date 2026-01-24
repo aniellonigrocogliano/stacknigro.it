@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             QuoteLevelsSeeder::class,
             AdminUserSeeder::class,
+            InboxConversationSeeder::class,
         ]);
     }
 }

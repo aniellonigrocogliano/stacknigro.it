@@ -1,3 +1,13 @@
+@php
+    use App\Models\InboxConversation;
+
+    $inboxUnread = InboxConversation::query()
+        ->whereNull('deleted_at')
+        ->whereNull('archived_at')
+        ->whereNull('read_at')
+        ->count();
+@endphp
+
 <aside class="my-2 bg-white sidenav navbar navbar-vertical navbar-expand-xs border-radius-lg fixed-start ms-2"
        id="sidenav-main">
 
@@ -87,6 +97,19 @@
      href="{{ url('/admin/quotes') }}">
     <i class="fa-solid fa-file-invoice-dollar opacity-5"></i>
     <span class="nav-link-text ms-1">Preventivi</span>
+  </a>
+</li>
+
+{{-- INBOX --}}
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/inbox*') ? 'active' : '' }}"
+     href="{{ url('/admin/inbox') }}">
+    <i class="fa-solid fa-inbox opacity-5"></i>
+    <span class="nav-link-text ms-1">Inbox</span>
+
+    @if($inboxUnread > 0)
+      <span class="badge bg-info ms-auto">{{ $inboxUnread }}</span>
+    @endif
   </a>
 </li>
 
