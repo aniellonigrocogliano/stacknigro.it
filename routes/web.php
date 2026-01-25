@@ -39,14 +39,25 @@ Route::middleware('auth')->prefix('admin')->group(function () {
     Route::view('/', 'admin.dashboard')->name('admin.dashboard');
 
     // SITE SETTINGS
-    Route::get('/settings', [SiteSettingsController::class, 'index'])->name('admin.settings.index');
-    Route::put('/settings', [SiteSettingsController::class, 'update'])->name('admin.settings.update');
+    Route::get('/hero', [SiteSettingsController::class, 'edit'])->name('admin.hero.index');
+    Route::put('/hero', [SiteSettingsController::class, 'update'])->name('admin.hero.update');
+
+    //BIO
+     Route::get('/bio', [SiteSettingsController::class, 'editBio'])->name('admin.bio.edit');
+       Route::post('/bio', [SiteSettingsController::class, 'updateBio'])->name('admin.bio.update');
+    Route::post('/tinymce/upload',
+        [SiteSettingsController::class, 'tinymceUpload']
+    )->name('admin.tinymce.upload');
 
     // SKILLS
-    Route::get('/skills', [SkillController::class, 'index'])->name('admin.skills.index');
-    Route::post('/skills', [SkillController::class, 'store'])->name('admin.skills.store');
-    Route::put('/skills/{skill}', [SkillController::class, 'update'])->name('admin.skills.update');
-    Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('admin.skills.destroy');
+Route::get('/skills', [SkillController::class, 'index'])->name('admin.skills.index');
+
+Route::get('/skills/create', [SkillController::class, 'create'])->name('admin.skills.create');
+Route::get('/skills/{skill}/edit', [SkillController::class, 'edit'])->name('admin.skills.edit');
+
+Route::post('/skills', [SkillController::class, 'store'])->name('admin.skills.store');
+Route::put('/skills/{skill}', [SkillController::class, 'update'])->name('admin.skills.update');
+Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('admin.skills.destroy');
 
     // PROJECTS
     Route::get('/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
