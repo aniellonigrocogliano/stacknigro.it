@@ -20,11 +20,16 @@
       </a>
 
       {{-- Svuota cestino --}}
-      <form method="POST" action="{{ route('inbox.trash.empty') }}"
-            onsubmit="return confirm('Vuoi svuotare il cestino? Questa azione elimina definitivamente tutti i messaggi nel cestino.');">
+      <form id="f-empty-trash" method="POST" action="{{ route('inbox.trash.empty') }}">
         @csrf
         @method('DELETE')
-        <button type="submit" class="btn btn-danger btn-sm">
+        <button
+          type="button"
+          class="btn btn-danger btn-sm js-confirm"
+          data-title="Svuota cestino"
+          data-body="Vuoi svuotare il cestino? Questa azione elimina definitivamente tutti i messaggi nel cestino."
+          data-form="f-empty-trash"
+        >
           <i class="fa-solid fa-broom me-1"></i> Svuota cestino
         </button>
       </form>
@@ -74,20 +79,33 @@
                 <div class="gap-3 d-flex justify-content-end">
 
                   {{-- Ripristina --}}
-                  <form method="POST" action="{{ route('inbox.restore', $c->id) }}">
+                  <form id="f-restore-{{ $c->id }}" method="POST" action="{{ route('inbox.restore', $c->id) }}">
                     @csrf
                     @method('PATCH')
-                    <button type="submit" class="p-0 btn btn-link" title="Ripristina">
+                    <button
+                      type="button"
+                      class="p-0 btn btn-link js-confirm"
+                      title="Ripristina"
+                      data-title="Ripristina messaggio"
+                      data-body="Vuoi ripristinare questo messaggio (torna in Inbox)?"
+                      data-form="f-restore-{{ $c->id }}"
+                    >
                       <i class="fa-solid fa-rotate-left"></i>
                     </button>
                   </form>
 
                   {{-- Elimina definitivo --}}
-                  <form method="POST" action="{{ route('inbox.forceDelete', $c->id) }}"
-                        onsubmit="return confirm('Eliminare definitivamente questo messaggio? Azione irreversibile.');">
+                  <form id="f-force-{{ $c->id }}" method="POST" action="{{ route('inbox.forceDelete', $c->id) }}">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="p-0 btn btn-link text-danger" title="Elimina definitivamente">
+                    <button
+                      type="button"
+                      class="p-0 btn btn-link text-danger js-confirm"
+                      title="Elimina definitivamente"
+                      data-title="Eliminazione definitiva"
+                      data-body="Eliminare definitivamente questo messaggio? Azione irreversibile."
+                      data-form="f-force-{{ $c->id }}"
+                    >
                       <i class="fa-solid fa-trash-can"></i>
                     </button>
                   </form>
@@ -114,5 +132,64 @@
     {{ $conversations->links() }}
   </div>
 
+  {{-- MODAL CONFERMA AZIONE (riusato per TUTTO) --}}
+  <div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title font-weight-normal" id="confirmActionTitle">Conferma</h5>
+          <button type="button" class="btn-close text-dark" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="confirmActionBody">Sei sicuro?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">
+            Annulla
+          </button>
+          <button type="button" class="btn bg-gradient-danger" id="confirmActionSubmit">
+            Conferma
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('confirmActionModal');
+    if (!modalEl || typeof bootstrap === 'undefined') return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    const titleEl = document.getElementById('confirmActionTitle');
+    const bodyEl  = document.getElementById('confirmActionBody');
+    const submitBtn = document.getElementById('confirmActionSubmit');
+
+    let pendingFormId = null;
+
+    document.querySelectorAll('.js-confirm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        pendingFormId = btn.getAttribute('data-form');
+        titleEl.textContent = btn.getAttribute('data-title') || 'Conferma';
+        bodyEl.textContent  = btn.getAttribute('data-body')  || 'Sei sicuro?';
+
+        modal.show();
+      });
+    });
+
+    submitBtn.addEventListener('click', () => {
+      if (!pendingFormId) return;
+      const form = document.getElementById(pendingFormId);
+      if (form) form.submit();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+      pendingFormId = null;
+    });
+  });
+</script>
+@endpush

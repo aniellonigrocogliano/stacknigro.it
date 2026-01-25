@@ -33,19 +33,32 @@
     <div class="flex-wrap gap-2 card-body d-flex justify-content-between align-items-center">
 
       <div class="flex-wrap gap-2 d-flex">
+
         {{-- Letto / non letto (solo se non è nel cestino) --}}
         @if(!$conversation->trashed())
           @if($conversation->read_at)
-            <form method="POST" action="{{ route('inbox.unread', $conversation) }}">
+            <form id="f-unread" method="POST" action="{{ route('inbox.unread', $conversation) }}">
               @csrf @method('PATCH')
-              <button class="btn btn-outline-secondary btn-sm" type="submit">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm js-confirm"
+                data-title="Conferma"
+                data-body="Vuoi segnare questo messaggio come NON letto?"
+                data-form="f-unread"
+              >
                 <i class="fa-regular fa-envelope me-1"></i> Non letto
               </button>
             </form>
           @else
-            <form method="POST" action="{{ route('inbox.read', $conversation) }}">
+            <form id="f-read" method="POST" action="{{ route('inbox.read', $conversation) }}">
               @csrf @method('PATCH')
-              <button class="btn btn-outline-secondary btn-sm" type="submit">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm js-confirm"
+                data-title="Conferma"
+                data-body="Vuoi segnare questo messaggio come letto?"
+                data-form="f-read"
+              >
                 <i class="fa-regular fa-envelope-open me-1"></i> Segna letto
               </button>
             </form>
@@ -55,26 +68,43 @@
         {{-- Archivio / Unarchive (solo se non è nel cestino) --}}
         @if(!$conversation->trashed())
           @if($conversation->archived_at)
-            <form method="POST" action="{{ route('inbox.unarchiveOne', $conversation) }}">
+            <form id="f-unarchive" method="POST" action="{{ route('inbox.unarchiveOne', $conversation) }}">
               @csrf @method('PATCH')
-              <button class="btn btn-outline-secondary btn-sm" type="submit">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm js-confirm"
+                data-title="Conferma"
+                data-body="Vuoi ripristinare questo messaggio in Inbox?"
+                data-form="f-unarchive"
+              >
                 <i class="fa-solid fa-box-open me-1"></i> Ripristina in Inbox
               </button>
             </form>
           @else
-            <form method="POST" action="{{ route('inbox.archiveOne', $conversation) }}">
+            <form id="f-archive" method="POST" action="{{ route('inbox.archiveOne', $conversation) }}">
               @csrf @method('PATCH')
-              <button class="btn btn-outline-secondary btn-sm" type="submit">
+              <button
+                type="button"
+                class="btn btn-outline-secondary btn-sm js-confirm"
+                data-title="Conferma"
+                data-body="Vuoi archiviare questo messaggio?"
+                data-form="f-archive"
+              >
                 <i class="fa-solid fa-box-archive me-1"></i> Archivia
               </button>
             </form>
           @endif
 
           {{-- Cestina --}}
-          <form method="POST" action="{{ route('inbox.trashOne', $conversation) }}"
-                onsubmit="return confirm('Spostare questo messaggio nel cestino?');">
+          <form id="f-trash" method="POST" action="{{ route('inbox.trashOne', $conversation) }}">
             @csrf @method('DELETE')
-            <button class="btn btn-outline-danger btn-sm" type="submit">
+            <button
+              type="button"
+              class="btn btn-outline-danger btn-sm js-confirm"
+              data-title="Conferma"
+              data-body="Vuoi spostare questo messaggio nel cestino?"
+              data-form="f-trash"
+            >
               <i class="fa-solid fa-trash me-1"></i> Cestino
             </button>
           </form>
@@ -82,21 +112,33 @@
 
         {{-- Se è nel cestino: ripristina + elimina definitivo --}}
         @if($conversation->trashed())
-          <form method="POST" action="{{ route('inbox.restore', $conversation->id) }}">
+          <form id="f-restore" method="POST" action="{{ route('inbox.restore', $conversation->id) }}">
             @csrf @method('PATCH')
-            <button class="btn btn-outline-secondary btn-sm" type="submit">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm js-confirm"
+              data-title="Conferma"
+              data-body="Vuoi ripristinare questo messaggio (torna in Inbox)?"
+              data-form="f-restore"
+            >
               <i class="fa-solid fa-rotate-left me-1"></i> Ripristina
             </button>
           </form>
 
-          <form method="POST" action="{{ route('inbox.forceDelete', $conversation->id) }}"
-                onsubmit="return confirm('Eliminare definitivamente questo messaggio? Azione irreversibile.');">
+          <form id="f-force" method="POST" action="{{ route('inbox.forceDelete', $conversation->id) }}">
             @csrf @method('DELETE')
-            <button class="btn btn-danger btn-sm" type="submit">
+            <button
+              type="button"
+              class="btn btn-danger btn-sm js-confirm"
+              data-title="Eliminazione definitiva"
+              data-body="Eliminare definitivamente questo messaggio? Azione irreversibile."
+              data-form="f-force"
+            >
               <i class="fa-solid fa-trash-can me-1"></i> Elimina definitivo
             </button>
           </form>
         @endif
+
       </div>
 
       <div class="text-sm text-muted">
@@ -197,7 +239,6 @@
       <div class="mb-3 card">
         <div class="card-body">
           <h6 class="mb-3"><i class="fa-regular fa-pen-to-square me-2"></i>Messaggio</h6>
-
           <div class="text-sm" style="white-space: pre-wrap;">{{ $conversation->user_message }}</div>
         </div>
       </div>
@@ -206,7 +247,6 @@
         <div class="card">
           <div class="card-body">
             <h6 class="mb-3"><i class="fa-solid fa-code me-2"></i>Payload preventivo (JSON)</h6>
-
             <pre class="p-3 mb-0 bg-gray-100 border-radius-lg"
                  style="max-height: 320px; overflow:auto;">{{ json_encode($conversation->quote_payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
           </div>
@@ -221,7 +261,7 @@
       <div class="card-body">
         <h6 class="mb-3"><i class="fa-solid fa-reply me-2"></i>Rispondi via email</h6>
 
-        <form method="POST" action="{{ route('inbox.reply', $conversation) }}">
+        <form id="f-reply" method="POST" action="{{ route('inbox.reply', $conversation) }}">
           @csrf
 
           <div class="row g-2">
@@ -257,8 +297,13 @@
             </div>
 
             <div class="gap-2 mt-2 col-12 d-flex justify-content-end">
-              <button type="submit" class="btn btn-primary"
-                      onclick="return confirm('Inviare la risposta via email?');">
+              <button
+                type="button"
+                class="btn btn-primary js-confirm"
+                data-title="Invio risposta"
+                data-body="Confermi l'invio della risposta via email?
+                data-form="f-reply"
+              >
                 <i class="fa-solid fa-paper-plane me-1"></i> Invia risposta
               </button>
             </div>
@@ -279,5 +324,67 @@
     </div>
   @endif
 
+  {{-- MODAL CONFERMA AZIONE --}}
+  <div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title font-weight-normal" id="confirmActionTitle">Conferma</h5>
+          <button type="button" class="btn-close text-dark" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body" id="confirmActionBody">Sei sicuro?</div>
+        <div class="modal-footer">
+          <button type="button" class="btn bg-gradient-secondary" data-bs-dismiss="modal">
+            Annulla
+          </button>
+          <button type="button" class="btn bg-gradient-danger" id="confirmActionSubmit">
+            Conferma
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </div>
 @endsection
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const modalEl = document.getElementById('confirmActionModal');
+    if (!modalEl || typeof bootstrap === 'undefined') return;
+
+    const modal = new bootstrap.Modal(modalEl);
+    const titleEl = document.getElementById('confirmActionTitle');
+    const bodyEl  = document.getElementById('confirmActionBody');
+    const submitBtn = document.getElementById('confirmActionSubmit');
+
+    let pendingFormId = null;
+
+    document.querySelectorAll('.js-confirm').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        pendingFormId = btn.getAttribute('data-form');
+        const t = btn.getAttribute('data-title') || 'Conferma';
+        const b = btn.getAttribute('data-body') || 'Sei sicuro?';
+
+        titleEl.textContent = t;
+        bodyEl.textContent = b;
+
+        modal.show();
+      });
+    });
+
+    submitBtn.addEventListener('click', () => {
+      if (!pendingFormId) return;
+      const form = document.getElementById(pendingFormId);
+      if (form) form.submit();
+    });
+
+    modalEl.addEventListener('hidden.bs.modal', () => {
+      pendingFormId = null;
+    });
+  });
+</script>
+@endpush

@@ -86,11 +86,6 @@
       </li>
 
 {{-- PREVENTIVI --}}
-<li class="mt-3 nav-item">
-  <h6 class="text-xs ps-4 ms-2 text-uppercase text-dark font-weight-bolder opacity-5">
-    Preventivi
-  </h6>
-</li>
 
 <li class="nav-item">
   <a class="nav-link text-dark {{ request()->is('admin/quotes*') ? 'active' : '' }}"
