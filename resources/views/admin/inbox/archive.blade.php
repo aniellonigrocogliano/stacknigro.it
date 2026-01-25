@@ -1,18 +1,18 @@
 @extends('layouts.admin')
 
-@section('title', 'Inbox')
+@section('title', 'Archivio')
 
 @section('content')
 <div class="py-3 container-fluid">
 
   <div class="mb-3 d-flex justify-content-between align-items-center">
     <h5 class="mb-0">
-      <i class="fa-solid fa-inbox me-2"></i>Inbox
+      <i class="fa-solid fa-box-archive me-2"></i>Archivio
     </h5>
 
     <div class="gap-2 d-flex">
-      <a href="{{ route('inbox.archive') }}" class="btn btn-outline-secondary btn-sm">
-        <i class="fa-solid fa-box-archive me-1"></i> Archivio
+      <a href="{{ route('inbox.index') }}" class="btn btn-outline-secondary btn-sm">
+        <i class="fa-solid fa-inbox me-1"></i> Inbox
       </a>
       <a href="{{ route('inbox.trash') }}" class="btn btn-outline-danger btn-sm">
         <i class="fa-solid fa-trash me-1"></i> Cestino
@@ -22,6 +22,7 @@
 
   <div class="card">
     <div class="p-0 card-body">
+
       <div class="table-responsive">
         <table class="table mb-0 table-hover align-items-center">
           <thead>
@@ -37,7 +38,6 @@
 
           @forelse($conversations as $c)
             <tr
-              class="{{ $c->read_at ? '' : 'fw-bold bg-gray-100' }}"
               style="cursor:pointer"
               onclick="window.location='{{ route('inbox.show', $c->id) }}'"
             >
@@ -48,9 +48,6 @@
 
               <td class="text-sm">
                 {{ $c->subject ?: '—' }}
-                @if($c->is_unread)
-                  <i class="fa-solid fa-circle text-primary ms-2" style="font-size:6px"></i>
-                @endif
               </td>
 
               <td class="text-sm">
@@ -66,37 +63,21 @@
               </td>
 
               <td class="text-end" onclick="event.stopPropagation()">
-                <div class="gap-2 d-flex justify-content-end">
+                <div class="gap-3 d-flex justify-content-end">
 
-                  {{-- letto / non letto --}}
-                  @if($c->read_at)
-                    <form method="POST" action="{{ route('inbox.unread', $c) }}">
-                      @csrf @method('PATCH')
-                      <button class="p-0 btn btn-link" title="Segna come non letto">
-                        <i class="fa-regular fa-envelope"></i>
-                      </button>
-                    </form>
-                  @else
-                    <form method="POST" action="{{ route('inbox.read', $c) }}">
-                      @csrf @method('PATCH')
-                      <button class="p-0 btn btn-link" title="Segna come letto">
-                        <i class="fa-regular fa-envelope-open"></i>
-                      </button>
-                    </form>
-                  @endif
-
-                  {{-- archivia --}}
-                  <form method="POST" action="{{ route('inbox.archiveOne', $c) }}">
+                  {{-- Ripristina da archivio --}}
+                  <form method="POST" action="{{ route('inbox.unarchiveOne', $c) }}">
                     @csrf @method('PATCH')
-                    <button class="p-0 btn btn-link" title="Archivia">
-                      <i class="fa-solid fa-box-archive"></i>
+                    <button type="submit" class="p-0 btn btn-link" title="Ripristina in Inbox">
+                      <i class="fa-solid fa-box-open"></i>
                     </button>
                   </form>
 
-                  {{-- cestino --}}
-                  <form method="POST" action="{{ route('inbox.trashOne', $c) }}">
+                  {{-- Cestina --}}
+                  <form method="POST" action="{{ route('inbox.trashOne', $c) }}"
+                        onsubmit="return confirm('Spostare questo messaggio nel cestino?');">
                     @csrf @method('DELETE')
-                    <button class="p-0 btn btn-link text-danger" title="Cestino">
+                    <button type="submit" class="p-0 btn btn-link text-danger" title="Cestino">
                       <i class="fa-solid fa-trash"></i>
                     </button>
                   </form>
@@ -107,7 +88,7 @@
           @empty
             <tr>
               <td colspan="5" class="py-4 text-center text-muted">
-                Inbox vuota
+                Nessun messaggio archiviato
               </td>
             </tr>
           @endforelse
@@ -115,6 +96,7 @@
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 
@@ -124,4 +106,3 @@
 
 </div>
 @endsection
-

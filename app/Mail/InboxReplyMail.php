@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\InboxConversation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
@@ -10,18 +11,21 @@ class InboxReplyMail extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public function __construct(
-        public string $subject,
-        public string $userMessage,
-        public string $replyBody,
-        public string $senderName,
-        public string $senderEmail
-    ) {}
+    public InboxConversation $conversation;
+    public string $replyBody;
+    public string $subjectLine;
+
+    public function __construct(InboxConversation $conversation, string $replyBody, string $subjectLine)
+    {
+        $this->conversation = $conversation;
+        $this->replyBody = $replyBody;
+        $this->subjectLine = $subjectLine;
+    }
 
     public function build()
     {
-        return $this->from($this->senderEmail, $this->senderName)
-            ->subject($this->subject)
-            ->view('emails.inbox-reply');
+        return $this->subject($this->subjectLine)
+            ->replyTo('aniello@stacknigro.it', 'Aniello Nigro')
+            ->view('emails.inbox_reply');
     }
 }

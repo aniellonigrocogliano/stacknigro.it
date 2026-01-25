@@ -6,7 +6,7 @@ use App\Http\Controllers\SiteSettingsController;
 use App\Http\Controllers\SkillController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QuoteAdminController;
-use App\Http\Controllers\InboxController;
+use App\Http\Controllers\InboxAdminController;
 use App\Http\Controllers\DashboardController;
 
 /*
@@ -38,7 +38,6 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 */
 Route::middleware('auth')->prefix('admin')->group(function () {
 
-    // ✅ prima era Route::view('/', 'admin.dashboard') -> non passava $inboxUnread
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
 
     // SITE SETTINGS
@@ -99,19 +98,28 @@ Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('adm
     | INBOX
     |--------------------------------------------------------------------------
     */
-    Route::get('/inbox', [InboxController::class, 'index'])->name('admin.inbox.index');
-    Route::get('/inbox/archive', [InboxController::class, 'archive'])->name('admin.inbox.archive');
-    Route::get('/inbox/trash', [InboxController::class, 'trash'])->name('admin.inbox.trash');
+Route::get('/inbox', [InboxAdminController::class, 'index'])->name('inbox.index');
+    Route::get('/inbox/archive', [InboxAdminController::class, 'archive'])->name('inbox.archive');
+    Route::get('/inbox/trash', [InboxAdminController::class, 'trash'])->name('inbox.trash');
 
-    Route::get('/inbox/{conversation}', [InboxController::class, 'show'])->name('admin.inbox.show');
+    // show anche se nel cestino
+    Route::get('/inbox/{conversation}', [InboxAdminController::class, 'show'])
+        ->withTrashed()
+        ->name('inbox.show');
 
-    Route::patch('/inbox/{conversation}/read', [InboxController::class, 'markRead'])->name('admin.inbox.read');
-    Route::patch('/inbox/{conversation}/unread', [InboxController::class, 'markUnread'])->name('admin.inbox.unread');
+    Route::patch('/inbox/{conversation}/read', [InboxAdminController::class, 'markRead'])->name('inbox.read');
+    Route::patch('/inbox/{conversation}/unread', [InboxAdminController::class, 'markUnread'])->name('inbox.unread');
 
-    Route::patch('/inbox/{conversation}/archive', [InboxController::class, 'doArchive'])->name('admin.inbox.doArchive');
-    Route::patch('/inbox/{conversation}/unarchive', [InboxController::class, 'unarchive'])->name('admin.inbox.unarchive');
+    Route::patch('/inbox/{conversation}/archive', [InboxAdminController::class, 'archiveOne'])->name('inbox.archiveOne');
+    Route::patch('/inbox/{conversation}/unarchive', [InboxAdminController::class, 'unarchiveOne'])->name('inbox.unarchiveOne');
 
-    Route::delete('/inbox/{conversation}', [InboxController::class, 'destroy'])->name('admin.inbox.destroy');
+    Route::delete('/inbox/{conversation}', [InboxAdminController::class, 'moveToTrash'])->name('inbox.trashOne');
 
-    Route::post('/inbox/{conversation}/reply', [InboxController::class, 'reply'])->name('admin.inbox.reply');
+    Route::patch('/inbox/trash/{conversationId}/restore', [InboxAdminController::class, 'restore'])->name('inbox.restore');
+    Route::delete('/inbox/trash/{conversationId}/force', [InboxAdminController::class, 'forceDelete'])->name('inbox.forceDelete');
+
+    // 🔥 svuota cestino
+    Route::delete('/inbox/trash/empty', [InboxAdminController::class, 'emptyTrash'])->name('inbox.trash.empty');
+
+    Route::post('/inbox/{conversation}/reply', [InboxAdminController::class, 'reply'])->name('inbox.reply');
 });
