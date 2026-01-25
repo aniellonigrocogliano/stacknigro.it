@@ -72,14 +72,14 @@
                   @if($c->read_at)
                     <form method="POST" action="{{ route('inbox.unread', $c) }}">
                       @csrf @method('PATCH')
-                      <button class="p-0 btn btn-link" title="Segna come non letto">
+                      <button class="p-0 btn btn-link text-secondary" title="Segna come non letto">
                         <i class="fa-regular fa-envelope"></i>
                       </button>
                     </form>
                   @else
                     <form method="POST" action="{{ route('inbox.read', $c) }}">
                       @csrf @method('PATCH')
-                      <button class="p-0 btn btn-link" title="Segna come letto">
+                      <button class="p-0 btn btn-link text-success" title="Segna come letto">
                         <i class="fa-regular fa-envelope-open"></i>
                       </button>
                     </form>
@@ -88,7 +88,7 @@
                   {{-- archivia --}}
                   <form method="POST" action="{{ route('inbox.archiveOne', $c) }}">
                     @csrf @method('PATCH')
-                    <button class="p-0 btn btn-link" title="Archivia">
+                    <button class="p-0 btn btn-link text-info" title="Archivia">
                       <i class="fa-solid fa-box-archive"></i>
                     </button>
                   </form>

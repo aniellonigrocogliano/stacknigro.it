@@ -84,7 +84,7 @@
                     @method('PATCH')
                     <button
                       type="button"
-                      class="p-0 btn btn-link js-confirm"
+                      class="p-0 btn btn-link js-confirm text-success"
                       title="Ripristina"
                       data-title="Ripristina messaggio"
                       data-body="Vuoi ripristinare questo messaggio (torna in Inbox)?"

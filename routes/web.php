@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\QuoteAdminController;
 use App\Http\Controllers\InboxAdminController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ContactController;
 
 /*
 |--------------------------------------------------------------------------
@@ -122,4 +123,14 @@ Route::get('/inbox', [InboxAdminController::class, 'index'])->name('inbox.index'
     Route::delete('/inbox/trash/empty', [InboxAdminController::class, 'emptyTrash'])->name('inbox.trash.empty');
 
     Route::post('/inbox/{conversation}/reply', [InboxAdminController::class, 'reply'])->name('inbox.reply');
+
+    /*
+|--------------------------------------------------------------------------
+| Contatti
+|--------------------------------------------------------------------------
+*/
+Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.index');
+Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
+Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 });

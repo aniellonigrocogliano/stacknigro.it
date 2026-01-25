@@ -3,14 +3,14 @@
 @section('title', 'Archivio')
 
 @section('content')
-<div class="container-fluid py-3">
+<div class="py-3 container-fluid">
 
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="mb-3 d-flex justify-content-between align-items-center">
     <h5 class="mb-0">
       <i class="fa-solid fa-box-archive me-2"></i>Archivio
     </h5>
 
-    <div class="d-flex gap-2">
+    <div class="gap-2 d-flex">
       <a href="{{ route('inbox.index') }}" class="btn btn-outline-secondary btn-sm">
         <i class="fa-solid fa-inbox me-1"></i> Inbox
       </a>
@@ -21,9 +21,9 @@
   </div>
 
   <div class="card">
-    <div class="card-body p-0">
+    <div class="p-0 card-body">
       <div class="table-responsive">
-        <table class="table table-hover align-items-center mb-0">
+        <table class="table mb-0 table-hover align-items-center">
           <thead>
             <tr>
               <th>Da</th>
@@ -62,7 +62,7 @@
               </td>
 
               <td class="text-end" onclick="event.stopPropagation()">
-                <div class="d-flex justify-content-end gap-3">
+                <div class="gap-3 d-flex justify-content-end">
 
                   {{-- Ripristina da archivio --}}
                   <form id="f-unarchive-{{ $c->id }}" method="POST"
@@ -70,7 +70,7 @@
                     @csrf @method('PATCH')
                     <button
                       type="button"
-                      class="btn btn-link p-0 js-confirm"
+                      class="p-0 btn btn-link js-confirm text-success"
                       title="Ripristina in Inbox"
                       data-title="Ripristina messaggio"
                       data-body="Vuoi ripristinare questo messaggio in Inbox?"
@@ -86,7 +86,7 @@
                     @csrf @method('DELETE')
                     <button
                       type="button"
-                      class="btn btn-link p-0 text-danger js-confirm"
+                      class="p-0 btn btn-link text-danger js-confirm"
                       title="Cestino"
                       data-title="Sposta nel cestino"
                       data-body="Vuoi spostare questo messaggio nel cestino?"
@@ -101,7 +101,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="5" class="text-center text-muted py-4">
+              <td colspan="5" class="py-4 text-center text-muted">
                 Nessun messaggio archiviato
               </td>
             </tr>
