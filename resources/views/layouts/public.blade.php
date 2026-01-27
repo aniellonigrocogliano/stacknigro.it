@@ -58,7 +58,7 @@
 <div id="preloader"></div>
   {{-- Vendor JS (Bootslander) --}}
   <script src="{{ asset('themes/bootslander/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-  <script src="{{ asset('themes/bootslander/vendor/php-email-form/validate.js') }}"></script>
+
   <script src="{{ asset('themes/bootslander/vendor/aos/aos.js') }}"></script>
   <script src="{{ asset('themes/bootslander/vendor/glightbox/js/glightbox.min.js') }}"></script>
   <script src="{{ asset('themes/bootslander/vendor/swiper/swiper-bundle.min.js') }}"></script>

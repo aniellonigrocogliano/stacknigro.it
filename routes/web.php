@@ -13,6 +13,7 @@ use App\Http\Controllers\LegalAdminController;
 use App\Http\Controllers\PublicLegalPageController;
 use App\Http\Controllers\PublicSkillController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\PublicContactController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC
@@ -23,7 +24,8 @@ Route::get('/chi-sono', fn() => view('public.bio'))->name('public.bio');
 Route::get('/skills', fn() => view('public.skills'))->name('public.skills');
 Route::get('/progetti', fn() => view('public.projects'))->name('public.projects');
 Route::get('/preventivo', fn() => view('public.quote'))->name('public.quote');
-Route::get('/contatti', fn() => view('public.contacts'))->name('public.contacts');
+Route::get('/contatti', [PublicContactController::class, 'create'])->name('public.contacts');
+Route::post('/contatti', [PublicContactController::class, 'store'])->name('public.contacts.store');
 Route::get('/privacy-policy', [PublicLegalPageController::class, 'privacyPolicy'])
     ->name('privacy.policy');
 Route::get('/skills', [PublicSkillController::class, 'index'])->name('public.skills');
