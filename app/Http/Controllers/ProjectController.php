@@ -111,7 +111,7 @@ class ProjectController extends Controller
         return redirect()->route('admin.projects.index')->with('success', 'Progetto eliminato.');
     }
 
-    public function deleteImage(ProjectImage $image)
+    public function destroyImage(Project $project, ProjectImage $image)
     {
         $projectId = $image->project_id;
         $wasCover  = (int) $image->is_cover === 1;

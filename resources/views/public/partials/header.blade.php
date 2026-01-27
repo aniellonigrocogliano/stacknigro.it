@@ -41,15 +41,15 @@
   </li>
 
   <li>
-    <a href="{{ route('public.projects') }}"
-       class="{{ request()->routeIs('public.projects') ? 'active' : '' }}">
+    <a href="{{ route('public.projects.index') }}"
+       class="{{ request()->routeIs('public.projects.index') ? 'active' : '' }}">
       <i class="fa-solid fa-folder-open me-2"></i> Mei progetti
     </a>
   </li>
 
   <li>
-    <a href="{{ route('public.quote') }}"
-       class="{{ request()->routeIs('public.quote') ? 'active' : '' }}">
+    <a href="{{ route('public.quotes') }}"
+       class="{{ request()->routeIs('public.quotes') ? 'active' : '' }}">
       <i class="fa-solid fa-file-invoice-dollar me-2"></i> Preventivo
     </a>
   </li>

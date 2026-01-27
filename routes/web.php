@@ -14,6 +14,8 @@ use App\Http\Controllers\PublicLegalPageController;
 use App\Http\Controllers\PublicSkillController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PublicContactController;
+use App\Http\Controllers\PublicProjectController;
+use App\Http\Controllers\PublicQuoteController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC
@@ -21,9 +23,13 @@ use App\Http\Controllers\PublicContactController;
 */
 Route::get('/', [HomeController::class, 'index'])->name('public.home');
 Route::get('/chi-sono', fn() => view('public.bio'))->name('public.bio');
-Route::get('/skills', fn() => view('public.skills'))->name('public.skills');
-Route::get('/progetti', fn() => view('public.projects'))->name('public.projects');
-Route::get('/preventivo', fn() => view('public.quote'))->name('public.quote');
+Route::get('/progetti', [PublicProjectController::class, 'index'])->name('public.projects.index');
+Route::get('/progetti/{project}', [PublicProjectController::class, 'show'])->name('public.projects.show');
+
+Route::get('/preventivo', [PublicQuoteController::class, 'index'])->name('public.quotes');
+Route::post('/preventivo', [PublicQuoteController::class, 'store'])->name('public.quotes.store');
+
+
 Route::get('/contatti', [PublicContactController::class, 'create'])->name('public.contacts');
 Route::post('/contatti', [PublicContactController::class, 'store'])->name('public.contacts.store');
 Route::get('/privacy-policy', [PublicLegalPageController::class, 'privacyPolicy'])
@@ -69,13 +75,23 @@ Route::post('/skills', [SkillController::class, 'store'])->name('admin.skills.st
 Route::put('/skills/{skill}', [SkillController::class, 'update'])->name('admin.skills.update');
 Route::delete('/skills/{skill}', [SkillController::class, 'destroy'])->name('admin.skills.destroy');
 
-    // PROJECTS
+// PROJECTS
     Route::get('/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
     Route::get('/projects/create', [ProjectController::class, 'create'])->name('admin.projects.create');
     Route::post('/projects', [ProjectController::class, 'store'])->name('admin.projects.store');
     Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('admin.projects.edit');
     Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('admin.projects.update');
     Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('admin.projects.destroy');
+Route::delete('/projects/{project}/images/{image}', [ProjectController::class, 'destroyImage'])
+  ->name('admin.project-images.destroy');
+
+Route::post('/projects/{project}/images/{image}/cover', [ProjectController::class, 'setCover'])
+  ->name('admin.project-images.cover');
+
+Route::post('/projects/{project}/images/sort', [ProjectController::class, 'sortImages'])
+  ->name('admin.project-images.sort');
+
+
 
     /*
     |--------------------------------------------------------------------------

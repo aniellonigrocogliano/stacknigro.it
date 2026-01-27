@@ -90,7 +90,7 @@
               <h6 class="mb-0">Immagini già caricate</h6>
               <p class="mb-0 text-sm text-secondary">
                 Totale: <strong>{{ $project->images->count() }}</strong>
-                <span id="sortStatus" class="ms-2 text-xs"></span>
+                <span id="sortStatus" class="text-xs ms-2"></span>
               </p>
             </div>
 
@@ -119,7 +119,7 @@
 
                       {{-- STELLINA COVER (DORATA) --}}
                       @if($isCover)
-                        <span class="position-absolute top-0 start-0 m-2" title="Cover" style="z-index: 5;">
+                        <span class="top-0 m-2 position-absolute start-0" title="Cover" style="z-index: 5;">
                           <i class="fa-solid fa-star fa-lg"
                              style="color:#f6c343; text-shadow:0 1px 2px rgba(0,0,0,.25);"></i>
                         </span>
@@ -143,12 +143,12 @@
                           </div>
                         </div>
 
-                        <div class="d-flex gap-1">
+                        <div class="gap-1 d-flex">
                           {{-- IMPOSTA COVER --}}
                           @if(!$isCover)
                             {{-- ✅ AGGIUNTO: classe per intercettare e fare reload immediato --}}
                             <form method="POST"
-                                  action="{{ route('admin.project-images.cover', $img) }}"
+                                  action="{{ route('admin.project-images.cover', ['project' => $project, 'image' => $img]) }}"
                                   class="js-set-cover">
                               @csrf
                               <button type="submit" class="mb-0 btn btn-sm btn-outline-dark" title="Imposta come cover">
@@ -164,7 +164,10 @@
                             title="Elimina"
                             data-bs-toggle="modal"
                             data-bs-target="#confirmDeleteModal"
-                            data-action="{{ route('admin.project-images.destroy', $img) }}"
+                            data-action="{{ route('admin.project-images.destroy', [
+    'project' => $project->id,
+    'image' => $img->id
+]) }}"
                             data-title="Eliminare questa immagine?"
                             data-body="Vuoi eliminare '{{ basename($img->path) }}'?"
                           >

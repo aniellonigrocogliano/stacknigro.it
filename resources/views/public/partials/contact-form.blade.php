@@ -1,15 +1,28 @@
 @php
   $action = $action ?? url('/contatti');
   $source = $source ?? 'contact';
-  $quotePayload = $quotePayload ?? null;
+
+  $quotePayload  = $quotePayload ?? null;
+  $quoteSummary  = $quoteSummary ?? null;
+  $mode          = $mode ?? 'send';
+
+  // nuovi flag (default: mostra tutto)
+  $hideSubmit = $hideSubmit ?? false;
+  $hidePrivacy = $hidePrivacy ?? false;
 @endphp
 
 <form action="{{ $action }}" method="POST" class="php-email-form">
   @csrf
 
   <input type="hidden" name="source" value="{{ $source }}">
-  @if($quotePayload)
+  <input type="hidden" name="mode" value="{{ $mode }}">
+
+  {{-- hidden preventivo --}}
+  @if(!is_null($quotePayload))
     <input type="hidden" name="quote_payload" value="{{ $quotePayload }}">
+  @endif
+  @if(!is_null($quoteSummary))
+    <input type="hidden" name="quote_summary" value="{{ $quoteSummary }}">
   @endif
 
   <div class="row gy-4">
@@ -55,20 +68,26 @@
       @error('user_message') <div class="mt-1 text-danger small">{{ $message }}</div> @enderror
     </div>
 
-    <div class="col-12">
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="privacy_accepted" id="privacy_accepted" value="1" required>
-        <label class="form-check-label" for="privacy_accepted">
-          Ho letto e accetto la <a href="{{ url('/privacy-policy#privacy') }}">Privacy Policy</a>.
-        </label>
+    {{-- PRIVACY (opzionale) --}}
+    @unless($hidePrivacy)
+      <div class="col-12">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="privacy_accepted" id="privacy_accepted" value="1" required>
+          <label class="form-check-label" for="privacy_accepted">
+            Ho letto e accetto la <a href="{{ url('/privacy-policy#privacy') }}">Privacy Policy</a>.
+          </label>
+        </div>
+        @error('privacy_accepted') <div class="mt-1 text-danger small">{{ $message }}</div> @enderror
       </div>
-      @error('privacy_accepted') <div class="mt-1 text-danger small">{{ $message }}</div> @enderror
-    </div>
+    @endunless
 
-    <div class="col-12">
-      <button type="submit" class="btn btn-primary">
-        Invia messaggio
-      </button>
-    </div>
+    {{-- SUBMIT (opzionale) --}}
+    @unless($hideSubmit)
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">
+          Invia messaggio
+        </button>
+      </div>
+    @endunless
   </div>
 </form>

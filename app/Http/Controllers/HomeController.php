@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SiteSetting;
 use App\Models\Skill;
 use App\Models\Contact;
+use App\Models\Project;
 
 class HomeController extends Controller
 {
@@ -24,12 +25,21 @@ class HomeController extends Controller
         // Contatti
         $contacts = Contact::orderBy('sort')->get();
 
+        // Progetti home (3 random) + immagini (per mostrare cover in card)
+        $homeProjects = Project::where('is_published', 1)
+            ->with(['images' => fn ($q) => $q->orderByDesc('is_cover')->orderBy('sort_order')->orderBy('id')])
+            ->inRandomOrder()
+            ->limit(3)
+            ->get();
+
         return view('public.home', compact(
             'site',
             'bioExcerpt',
             'hasMore',
             'homeSkills',
-            'contacts'
+            'contacts',
+            'homeProjects'
         ));
     }
 }
+

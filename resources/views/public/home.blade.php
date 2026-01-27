@@ -70,6 +70,113 @@
 </section>
 {{-- /Skills (HOME) --}}
 
+{{-- Progetti --}}
+<section id="projects" class="team section">
+
+  <div class="container section-title" data-aos="fade-up">
+    <h2>Progetti</h2>
+    <div><span>Alcuni dei miei</span> <span class="description-title">progetti</span></div>
+  </div>
+
+  <div class="container">
+    <div class="row gy-5">
+
+      @forelse($homeProjects as $project)
+        @php
+          $cover = $project->images->first();
+          $img = $cover ? asset('storage/'.$cover->path) : asset('themes/bootslander/img/placeholder.jpg');
+        @endphp
+
+        <div class="col-lg-4 col-md-6" data-aos="fade-up">
+          <div class="member">
+            <div class="pic">
+              <a href="{{ route('public.projects.show', $project) }}">
+                <img src="{{ $img }}" class="img-fluid" alt="{{ $project->title }}">
+              </a>
+            </div>
+
+            <div class="mt-3 member-info">
+              <h4>
+                <a href="{{ route('public.projects.show', $project) }}" class="text-decoration-none">
+                  {{ $project->title }}
+                </a>
+              </h4>
+              <span>{{ $project->excerpt }}</span>
+            </div>
+          </div>
+        </div>
+      @empty
+        <div class="col-12">
+          <p class="mb-0 text-center">Nessun progetto disponibile.</p>
+        </div>
+      @endforelse
+
+    </div>
+  </div>
+<div class="mt-4 ">
+  <span class="text-muted">
+    Questi sono solo alcuni dei progetti che ho realizzato, nati da esigenze reali e trasformati in soluzioni concrete —
+    <a href="{{ route('public.projects.index') }}" class="fw-semibold ">
+      scoprili tutti →
+    </a>
+  </span>
+</div>
+
+{{-- Progetti end --}}
+
+{{-- Preventivi --}}
+
+<section id="quote-home" class="section ">
+    <div class="container section-title" data-aos="fade-up">
+    <h2>Ma quanto mi costa?</h2>
+    <div><span>Calcola</span> <span class="description-title">il tuo preventivo</span></div>
+  </div>
+  <div class="container" data-aos="fade-up">
+
+    <div class="row align-items-center gy-4">
+
+      {{-- IMMAGINE --}}
+      <div class="col-lg-6 d-flex justify-content-center">
+        <img
+          src="{{ asset('storage/site/preventivo-home.png') }}"
+          alt="Richiedi un preventivo"
+          class="rounded img-fluid"
+          style="max-height: 450px;"
+        >
+      </div>
+
+      {{-- TESTO --}}
+      <div class="col-lg-6">
+
+        <div class="mb-3 d-flex align-items-start">
+          <i class="fa-regular fa-lightbulb fa-2x me-3 text-warning"></i>
+          <div>
+            <h3 class="mb-2">Serve una soluzione, non solo un’idea</h3>
+            <p class="mb-0">
+              <strong>Aniello Nigro Cogliano</strong> è qui per trasformare problemi
+              complessi in soluzioni concrete.<br>
+              Raccontami cosa ti serve e costruiamo qualcosa che funzioni davvero.
+            </p>
+          </div>
+        </div>
+<div class="mt-4 text-end">
+        <a href="{{ route('public.quotes') }}"
+           class="btn btn-success d-inline-flex align-items-center">
+          Richiedi un preventivo
+          <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+</div>
+<p class="mt-2 text-muted fst-italic text-end small">
+  Puoi creare il tuo preventivo in autonomia, senza impegni.
+</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+
       {{-- CONTATTI --}}
 <section id="contact" class="contact section">
   <!-- Section Title -->
