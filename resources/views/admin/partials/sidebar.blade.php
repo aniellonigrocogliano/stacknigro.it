@@ -107,6 +107,14 @@
     @endif
   </a>
 </li>
+{{-- POLICY & COOKIE --}}
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/legal*') ? 'active' : '' }}"
+     href="{{ url('/admin/legal') }}">
+    <i class="fa-solid fa-scale-balanced opacity-5"></i>
+    <span class="nav-link-text ms-1">Policy & Cookie</span>
+  </a>
+</li>
 
       {{-- ACCOUNT --}}
       <li class="mt-3 nav-item">

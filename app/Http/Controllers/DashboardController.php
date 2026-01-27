@@ -8,6 +8,11 @@ use App\Models\Skill;
 use App\Models\SiteSetting;
 use Illuminate\Support\Facades\DB;
 
+// ⬇️ AGGIUNTE
+use App\Models\GaSnapshot;
+use App\Services\Ga4Service;
+use Carbon\Carbon;
+
 class DashboardController extends Controller
 {
     public function index()
@@ -29,7 +34,7 @@ class DashboardController extends Controller
             ->whereDate('created_at', now()->toDateString())
             ->count();
 
-        // PREVENTIVI KPI (source=quote)
+        // PREVENTIVI KPI
         $quotes30 = InboxConversation::query()
             ->whereNull('deleted_at')
             ->where('source', 'quote')
@@ -55,14 +60,31 @@ class DashboardController extends Controller
         $projectsPublished = Project::where('is_published', 1)->count();
         $projectsDraft = Project::where('is_published', 0)->count();
 
-        // FOTO PROGETTI (tabella project_images dal DB)
         $projectImagesTotal = (int) DB::table('project_images')->count();
-
-        // Skills
         $skillsTotal = Skill::count();
 
-        // Visite (placeholder, poi GA)
-        $visitsTotal = 0;
+        // ⬇️ GA SNAPSHOT (AGGIUNTA SECCA)
+        $ga = GaSnapshot::where('key', 'dashboard')->first();
+
+        $stale = !$ga || $ga->fetched_at->lt(now()->subHours(4));
+
+        if ($stale) {
+            try {
+                $payload = app(Ga4Service::class)->dashboardPayload();
+
+                $ga = GaSnapshot::updateOrCreate(
+                    ['key' => 'dashboard'],
+                    ['payload' => $payload, 'fetched_at' => now()]
+                );
+            } catch (\Throwable $e) {
+                // non bloccare la dashboard
+            }
+        }
+
+        $gaData = $ga?->payload ?? null;
+
+        // Visite (ora da GA)
+        $visitsTotal = $gaData['visits_30d'] ?? 0;
 
         // Site settings completeness
         $site = SiteSetting::query()->first();
@@ -93,7 +115,7 @@ class DashboardController extends Controller
             ->limit(6)
             ->get();
 
-        // CHART: messaggi ultimi 7 giorni (bar)
+        // CHART inbox 7 giorni
         $days = collect(range(6, 0))->map(fn ($i) => now()->subDays($i)->toDateString());
         $countsByDay = InboxConversation::query()
             ->whereNull('deleted_at')
@@ -105,7 +127,7 @@ class DashboardController extends Controller
         $chartInboxLabels = $days->map(fn ($d) => date('D', strtotime($d)))->values();
         $chartInboxData = $days->map(fn ($d) => (int) ($countsByDay[$d] ?? 0))->values();
 
-        // CHART: preventivi ultimi 6 mesi (line, count)
+        // CHART preventivi 6 mesi
         $months = collect(range(5, 0))->map(fn ($i) => now()->subMonths($i)->format('Y-m'));
         $countsByMonth = InboxConversation::query()
             ->whereNull('deleted_at')
@@ -139,6 +161,7 @@ class DashboardController extends Controller
             'chartInboxData',
             'chartQuoteLabels',
             'chartQuoteData',
+            'gaData'
         ));
     }
 }

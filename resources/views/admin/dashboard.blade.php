@@ -3,6 +3,27 @@
 @section('title', 'Dashboard')
 
 @section('content')
+@php
+  // GA payload (dal controller: $gaData = $ga?->payload ?? null)
+  $ga = $gaData ?? [];
+
+  $gaVisits30 = data_get($ga, 'visits_30d');          // int
+  $gaPageviews30 = data_get($ga, 'pageviews_30d');    // int
+
+  $topPagePath = data_get($ga, 'top_page_7d.path');   // string
+  $topPageViews = data_get($ga, 'top_page_7d.views'); // int
+
+  $topSourceName = data_get($ga, 'top_source_7d.source');   // string
+  $topSourceSessions = data_get($ga, 'top_source_7d.sessions'); // int
+
+  $topDeviceName = data_get($ga, 'top_device_7d.device');    // string
+  $topDeviceSessions = data_get($ga, 'top_device_7d.sessions'); // int
+
+  $ga7Labels = data_get($ga, 'last7.labels', []);
+  $ga7Visits = data_get($ga, 'last7.visits', []);
+  $ga7Pageviews = data_get($ga, 'last7.pageviews', []);
+@endphp
+
 <div class="py-2 container-fluid">
 
   <div class="row">
@@ -180,14 +201,16 @@
         </div>
       </div>
 
-      {{-- Visite --}}
+      {{-- Visite (GA4) --}}
       <div class="col-xl-3 col-sm-6">
         <div class="card">
           <div class="p-2 card-header ps-3">
             <div class="d-flex justify-content-between">
               <div>
-                <p class="mb-0 text-sm text-capitalize">Visite</p>
-                <h4 class="mb-0">{{ $visits ?? 0 }}</h4>
+                <p class="mb-0 text-sm text-capitalize">Visite (30gg)</p>
+                <h4 class="mb-0">
+                  {{ is_numeric($gaVisits30) ? number_format((int)$gaVisits30, 0, ',', '.') : '—' }}
+                </h4>
               </div>
               <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
                 <i class="text-white fas fa-chart-line"></i>
@@ -196,7 +219,116 @@
           </div>
           <hr class="my-0 dark horizontal">
           <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">Placeholder (GA in arrivo)</p>
+            <p class="mb-0 text-sm">
+              {{ is_numeric($gaVisits30) ? 'Dati GA4 (ultimi 30 giorni)' : 'GA non disponibile (offline / consenso / errore)' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- TERZA RIGA: 4 CARD GA --}}
+    <div class="mt-1 row g-4">
+      {{-- Pageviews 30gg --}}
+      <div class="col-xl-3 col-sm-6">
+        <div class="card">
+          <div class="p-2 card-header ps-3">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="mb-0 text-sm text-capitalize">Pageviews (30gg)</p>
+                <h4 class="mb-0">
+                  {{ is_numeric($gaPageviews30) ? number_format((int)$gaPageviews30, 0, ',', '.') : '—' }}
+                </h4>
+              </div>
+              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+                <i class="text-white fas fa-eye"></i>
+              </div>
+            </div>
+          </div>
+          <hr class="my-0 dark horizontal">
+          <div class="p-2 card-footer ps-3">
+            <p class="mb-0 text-sm">Visualizzazioni pagina</p>
+          </div>
+        </div>
+      </div>
+
+      {{-- Top pagina 7gg --}}
+      <div class="col-xl-3 col-sm-6">
+        <div class="card">
+          <div class="p-2 card-header ps-3">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="mb-0 text-sm text-capitalize">Top pagina (7gg)</p>
+                <h6 class="mb-0 text-sm font-weight-bolder">
+                  {{ $topPagePath ?: '—' }}
+                </h6>
+              </div>
+              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+                <i class="text-white fas fa-file-lines"></i>
+              </div>
+            </div>
+          </div>
+          <hr class="my-0 dark horizontal">
+          <div class="p-2 card-footer ps-3">
+            <p class="mb-0 text-sm">
+              Views: <span class="font-weight-bolder">
+                {{ is_numeric($topPageViews) ? number_format((int)$topPageViews, 0, ',', '.') : '—' }}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {{-- Top sorgente 7gg --}}
+      <div class="col-xl-3 col-sm-6">
+        <div class="card">
+          <div class="p-2 card-header ps-3">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="mb-0 text-sm text-capitalize">Top sorgente (7gg)</p>
+                <h6 class="mb-0 text-sm font-weight-bolder">
+                  {{ $topSourceName ?: '—' }}
+                </h6>
+              </div>
+              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+                <i class="text-white fas fa-share-nodes"></i>
+              </div>
+            </div>
+          </div>
+          <hr class="my-0 dark horizontal">
+          <div class="p-2 card-footer ps-3">
+            <p class="mb-0 text-sm">
+              Sessioni: <span class="font-weight-bolder">
+                {{ is_numeric($topSourceSessions) ? number_format((int)$topSourceSessions, 0, ',', '.') : '—' }}
+              </span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {{-- Device 7gg --}}
+      <div class="col-xl-3 col-sm-6">
+        <div class="card">
+          <div class="p-2 card-header ps-3">
+            <div class="d-flex justify-content-between">
+              <div>
+                <p class="mb-0 text-sm text-capitalize">Device (7gg)</p>
+                <h6 class="mb-0 text-sm font-weight-bolder">
+                  {{ $topDeviceName ?: '—' }}
+                </h6>
+              </div>
+              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+                <i class="text-white fas fa-mobile-screen-button"></i>
+              </div>
+            </div>
+          </div>
+          <hr class="my-0 dark horizontal">
+          <div class="p-2 card-footer ps-3">
+            <p class="mb-0 text-sm">
+              Sessioni: <span class="font-weight-bolder">
+                {{ is_numeric($topDeviceSessions) ? number_format((int)$topDeviceSessions, 0, ',', '.') : '—' }}
+              </span>
+            </p>
           </div>
         </div>
       </div>
@@ -204,7 +336,48 @@
 
   </div>
 
-  {{-- CHARTS --}}
+  {{-- GA CHARTS: 2 BARRE (7 giorni) --}}
+  <div class="mt-4 row g-4">
+    <div class="col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-0">Visite ultimi 7 giorni</h6>
+          <p class="text-sm">GA4 (sessions)</p>
+          <div class="pe-2">
+            <div class="chart">
+              <canvas id="chart-ga-visits-7d" class="chart-canvas" height="170"></canvas>
+            </div>
+          </div>
+          <hr class="dark horizontal">
+          <div class="d-flex">
+            <i class="my-auto text-sm material-symbols-rounded me-1">schedule</i>
+            <p class="mb-0 text-sm">dati ultimi 7 giorni</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-0">Pageviews ultimi 7 giorni</h6>
+          <p class="text-sm">GA4 (screenPageViews)</p>
+          <div class="pe-2">
+            <div class="chart">
+              <canvas id="chart-ga-pageviews-7d" class="chart-canvas" height="170"></canvas>
+            </div>
+          </div>
+          <hr class="dark horizontal">
+          <div class="d-flex">
+            <i class="my-auto text-sm material-symbols-rounded me-1">schedule</i>
+            <p class="mb-0 text-sm">dati ultimi 7 giorni</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- CHARTS (TUOI) --}}
   <div class="mt-4 row g-4">
     <div class="col-lg-6 col-md-12">
       <div class="card">
@@ -391,7 +564,7 @@
             Skills: <span class="font-weight-bolder">{{ $skillsTotal ?? 0 }}</span> |
             Progetti: <span class="font-weight-bolder">{{ $projectsTotal ?? 0 }}</span> |
             Foto: <span class="font-weight-bolder">{{ $projectImagesTotal ?? 0 }}</span> |
-            Visite: <span class="font-weight-bolder">{{ $visits ?? 0 }}</span>
+            Visite: <span class="font-weight-bolder">{{ is_numeric($gaVisits30) ? number_format((int)$gaVisits30, 0, ',', '.') : '—' }}</span>
           </p>
         </div>
       </div>
@@ -405,12 +578,70 @@
 @push('scripts')
 <script>
   // Chart.js (assumo già incluso dal layout Material Dashboard)
+
+  // TUOI CHART
   const inboxLabels = @json($chartInboxLabels);
   const inboxData = @json($chartInboxData);
 
   const quoteLabels = @json($chartQuoteLabels);
   const quoteData = @json($chartQuoteData);
 
+  // GA CHARTS
+  const ga7Labels = @json($ga7Labels);
+  const ga7Visits = @json($ga7Visits);
+  const ga7Pageviews = @json($ga7Pageviews);
+
+  // GA VISITS (BAR)
+  const ctxGaVisits = document.getElementById('chart-ga-visits-7d')?.getContext('2d');
+  if (ctxGaVisits && window.Chart && Array.isArray(ga7Labels) && ga7Labels.length) {
+    new Chart(ctxGaVisits, {
+      type: 'bar',
+      data: {
+        labels: ga7Labels,
+        datasets: [{
+          label: 'Visite',
+          data: ga7Visits,
+          borderWidth: 0,
+          borderRadius: 4,
+          borderSkipped: false,
+          barThickness: 'flex'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // GA PAGEVIEWS (BAR)
+  const ctxGaPv = document.getElementById('chart-ga-pageviews-7d')?.getContext('2d');
+  if (ctxGaPv && window.Chart && Array.isArray(ga7Labels) && ga7Labels.length) {
+    new Chart(ctxGaPv, {
+      type: 'bar',
+      data: {
+        labels: ga7Labels,
+        datasets: [{
+          label: 'Pageviews',
+          data: ga7Pageviews,
+          borderWidth: 0,
+          borderRadius: 4,
+          borderSkipped: false,
+          barThickness: 'flex'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  // INBOX (BAR)
   const ctxInbox = document.getElementById('chart-inbox')?.getContext('2d');
   if (ctxInbox && window.Chart) {
     new Chart(ctxInbox, {
@@ -435,6 +666,7 @@
     });
   }
 
+  // QUOTES (LINE)
   const ctxQuotes = document.getElementById('chart-quotes')?.getContext('2d');
   if (ctxQuotes && window.Chart) {
     new Chart(ctxQuotes, {
@@ -460,5 +692,3 @@
   }
 </script>
 @endpush
-
-

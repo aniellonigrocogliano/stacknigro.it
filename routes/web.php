@@ -9,19 +9,24 @@ use App\Http\Controllers\QuoteAdminController;
 use App\Http\Controllers\InboxAdminController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ContactController;
-
+use App\Http\Controllers\LegalAdminController;
+use App\Http\Controllers\PublicLegalPageController;
+use App\Http\Controllers\PublicSkillController;
+use App\Http\Controllers\HomeController;
 /*
 |--------------------------------------------------------------------------
 | PUBLIC
 |--------------------------------------------------------------------------
 */
-Route::get('/', fn() => view('public.home'))->name('public.home');
+Route::get('/', [HomeController::class, 'index'])->name('public.home');
 Route::get('/chi-sono', fn() => view('public.bio'))->name('public.bio');
 Route::get('/skills', fn() => view('public.skills'))->name('public.skills');
 Route::get('/progetti', fn() => view('public.projects'))->name('public.projects');
 Route::get('/preventivo', fn() => view('public.quote'))->name('public.quote');
 Route::get('/contatti', fn() => view('public.contacts'))->name('public.contacts');
-Route::get('/privacy-policy', fn() => view('public.privacy'))->name('public.privacy');
+Route::get('/privacy-policy', [PublicLegalPageController::class, 'privacyPolicy'])
+    ->name('privacy.policy');
+Route::get('/skills', [PublicSkillController::class, 'index'])->name('public.skills');
 
 /*
 |--------------------------------------------------------------------------
@@ -133,4 +138,13 @@ Route::get('/contacts', [ContactController::class, 'index'])->name('contacts.ind
 Route::post('/contacts', [ContactController::class, 'store'])->name('contacts.store');
 Route::put('/contacts/{contact}', [ContactController::class, 'update'])->name('contacts.update');
 Route::delete('/contacts/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+    /*
+|--------------------------------------------------------------------------
+| Pagina policy
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/legal', [LegalAdminController::class, 'edit'])->name('legal.edit');
+Route::put('/legal', [LegalAdminController::class, 'update'])->name('legal.update');
 });

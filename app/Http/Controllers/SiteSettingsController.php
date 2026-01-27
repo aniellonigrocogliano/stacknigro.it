@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Storage;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
 use App\Models\SiteSetting;
+use App\Models\Skill;
 
 class SiteSettingsController extends Controller
 {

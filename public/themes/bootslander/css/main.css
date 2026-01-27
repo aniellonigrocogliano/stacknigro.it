@@ -18,7 +18,7 @@
 }
 
 /* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
-:root { 
+:root {
   --background-color: #ffffff; /* Background color for the entire website, including individual sections */
   --default-color: #444444; /* Default color used for the majority of the text content across the entire website */
   --heading-color: #040677; /* Color for headings, subheadings and title throughout the website */
@@ -1745,4 +1745,32 @@ section,
 --------------------------------------------------------------*/
 .starter-section {
   /* Add your styles here */
+}
+/* =========================
+   Privacy / Cookie tabs
+   ========================= */
+
+/* tab inattiva */
+.nav-pills .nav-link {
+  color: #08005E;
+  background-color: transparent;
+}
+
+/* tab attiva */
+.nav-pills .nav-link.active,
+.nav-pills .show > .nav-link {
+  background-color: #08005E;
+  color: #ffffff;
+}
+
+/* hover */
+.nav-pills .nav-link:hover {
+  color: #08005E;
+  background-color: rgba(8, 0, 94, 0.08);
+}
+
+/* focus (accessibilità) */
+.nav-pills .nav-link:focus-visible {
+  outline: 2px solid rgba(8, 0, 94, 0.4);
+  outline-offset: 2px;
 }

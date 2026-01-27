@@ -62,8 +62,8 @@
   </li>
 
   <li>
-    <a href="{{ route('public.privacy') }}"
-       class="{{ request()->routeIs('public.privacy') ? 'active' : '' }}">
+    <a href="{{ route('privacy.policy') }}"
+       class="{{ request()->routeIs('privacy.policy') ? 'active' : '' }}">
       <i class="fa-solid fa-shield-halved me-2"></i> Privacy policy
     </a>
   </li>

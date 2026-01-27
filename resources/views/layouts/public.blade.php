@@ -20,6 +20,22 @@
 
   {{-- Main CSS (Bootslander) --}}
   <link href="{{ asset('themes/bootslander/css/main.css') }}" rel="stylesheet">
+
+  {{-- Google Analytics (GA4) - carica SOLO se consenso = all --}}
+@php
+  $gaId = $site?->analytics_measurement_id;
+  $consent = $_COOKIE['sn_cookie_consent'] ?? null; // 'necessary' | 'all' | null
+@endphp
+
+@if(!empty($gaId) && $consent === 'all')
+  <script async src="https://www.googletagmanager.com/gtag/js?id={{ $gaId }}"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', @json($gaId));
+  </script>
+@endif
 </head>
 
 @php $isHome = request()->is('/'); @endphp
@@ -50,6 +66,8 @@
   {{-- Main JS (Bootslander) --}}
   <script src="{{ asset('themes/bootslander/js/main.js') }}"></script>
 
-
+  {{-- Cookie modal --}}
+  @include('public.partials.cookie-consent-modal')
+  @stack('scripts')
 </body>
 </html>
