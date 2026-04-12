@@ -5,11 +5,12 @@
       {{-- nel template c'è <h1 class="sitename">Bootslander</h1> --}}
       {{-- noi mettiamo il logo dinamico se esiste, altrimenti testo --}}
       @if($site?->logo_path)
-        <img
-          src="{{ asset('storage/'.$site->logo_path) }}"
-          alt="logo"
-          style="height: 28px; width: auto;"
-        >
+<img
+  src="{{ asset('storage/'.$site->logo_path) }}?v={{ $site->updated_at?->timestamp }}"
+  alt="logo"
+  loading="eager"
+  style="height: 28px; width: auto;"
+>
       @endif
 
       <h1 class="sitename ms-2">
@@ -60,7 +61,12 @@
       <i class="fa-solid fa-envelope me-2"></i> Contattami
     </a>
   </li>
-
+<li>
+  <a href="{{ route('public.download.index') }}"
+     class="{{ request()->routeIs('public.download.*') ? 'active' : '' }}">
+    <i class="fa-solid fa-cloud-arrow-down me-2"></i> Download
+  </a>
+</li>
   <li>
     <a href="{{ route('privacy.policy') }}"
        class="{{ request()->routeIs('privacy.policy') ? 'active' : '' }}">

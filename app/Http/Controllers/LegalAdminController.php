@@ -22,7 +22,13 @@ class LegalAdminController extends Controller
             ['title' => 'Cookie Policy', 'content' => null]
         );
 
-        return view('admin.legal.edit', compact('site', 'privacy', 'cookie'));
+        // ✅ NEW: CAPTCHA Policy
+        $captcha = LegalPage::firstOrCreate(
+            ['type' => 'captcha'],
+            ['title' => 'CAPTCHA Policy', 'content' => null]
+        );
+
+        return view('admin.legal.edit', compact('site', 'privacy', 'cookie', 'captcha'));
     }
 
     public function update(Request $request)
@@ -31,26 +37,31 @@ class LegalAdminController extends Controller
 
         $data = $request->validate([
             // legal_pages
-            'privacy_title' => ['nullable','string','max:160'],
-            'privacy_content' => ['nullable','string'],
-            'cookie_title' => ['nullable','string','max:160'],
-            'cookie_content' => ['nullable','string'],
+            'privacy_title'   => ['nullable', 'string', 'max:160'],
+            'privacy_content' => ['nullable', 'string'],
+
+            'cookie_title'    => ['nullable', 'string', 'max:160'],
+            'cookie_content'  => ['nullable', 'string'],
+
+            // ✅ NEW: captcha page
+            'captcha_title'   => ['nullable', 'string', 'max:160'],
+            'captcha_content' => ['nullable', 'string'],
 
             // banner cookie (site_settings)
             'cookie_banner_enabled' => ['nullable'],
-            'cookie_consent_days' => ['required','integer','min:1','max:3650'],
-            'cookie_banner_html' => ['nullable','string'],
+            'cookie_consent_days'   => ['required', 'integer', 'min:1', 'max:3650'],
+            'cookie_banner_html'    => ['nullable', 'string'],
 
             // analytics (site_settings)
-            'analytics_provider' => ['nullable','string','max:30'],
-            'analytics_measurement_id' => ['nullable','string','max:50'],
+            'analytics_provider'       => ['nullable', 'string', 'max:30'],
+            'analytics_measurement_id' => ['nullable', 'string', 'max:50'],
         ]);
 
         // upsert legal pages
         LegalPage::updateOrCreate(
             ['type' => 'privacy'],
             [
-                'title' => $data['privacy_title'] ?: 'Privacy Policy',
+                'title'   => ($data['privacy_title'] ?? null) ?: 'Privacy Policy',
                 'content' => $data['privacy_content'] ?? null,
             ]
         );
@@ -58,22 +69,30 @@ class LegalAdminController extends Controller
         LegalPage::updateOrCreate(
             ['type' => 'cookie'],
             [
-                'title' => $data['cookie_title'] ?: 'Cookie Policy',
+                'title'   => ($data['cookie_title'] ?? null) ?: 'Cookie Policy',
                 'content' => $data['cookie_content'] ?? null,
+            ]
+        );
+
+        // ✅ NEW: captcha page
+        LegalPage::updateOrCreate(
+            ['type' => 'captcha'],
+            [
+                'title'   => ($data['captcha_title'] ?? null) ?: 'CAPTCHA Policy',
+                'content' => $data['captcha_content'] ?? null,
             ]
         );
 
         // site settings
         $site->cookie_banner_enabled = $request->boolean('cookie_banner_enabled');
-        $site->cookie_consent_days = (int) $data['cookie_consent_days'];
-        $site->cookie_banner_html = $data['cookie_banner_html'] ?? null;
+        $site->cookie_consent_days   = (int) $data['cookie_consent_days'];
+        $site->cookie_banner_html    = $data['cookie_banner_html'] ?? null;
 
-        $site->analytics_provider = $data['analytics_provider'] ?: null;
-        $site->analytics_measurement_id = $data['analytics_measurement_id'] ?: null;
+        $site->analytics_provider       = ($data['analytics_provider'] ?? null) ?: null;
+        $site->analytics_measurement_id = ($data['analytics_measurement_id'] ?? null) ?: null;
 
         $site->save();
 
-        return back()->with('success', 'Policy / Cookie / Banner / Analytics aggiornati.');
+        return back()->with('success', 'Policy / Cookie / CAPTCHA / Banner / Analytics aggiornati.');
     }
 }
-

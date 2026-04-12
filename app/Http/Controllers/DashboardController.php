@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\DB;
 // ⬇️ AGGIUNTE
 use App\Models\GaSnapshot;
 use App\Services\Ga4Service;
-use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -63,10 +62,11 @@ class DashboardController extends Controller
         $projectImagesTotal = (int) DB::table('project_images')->count();
         $skillsTotal = Skill::count();
 
-        // ⬇️ GA SNAPSHOT (AGGIUNTA SECCA)
+        // ⬇️ GA SNAPSHOT
         $ga = GaSnapshot::where('key', 'dashboard')->first();
 
-        $stale = !$ga || $ga->fetched_at->lt(now()->subHours(4));
+        $force = request()->boolean('refresh_ga');
+        $stale = $force || !$ga || $ga->fetched_at->lt(now()->subHours(4));
 
         if ($stale) {
             try {
@@ -78,13 +78,19 @@ class DashboardController extends Controller
                 );
             } catch (\Throwable $e) {
                 // non bloccare la dashboard
+                logger()->warning('GA4 snapshot refresh failed', [
+                    'msg' => $e->getMessage(),
+                    'class' => get_class($e),
+                ]);
+                // $ga resta quello vecchio (se esiste)
             }
         }
 
-        $gaData = $ga?->payload ?? null;
+        // ⬇️ IMPORTANTE: sempre array, mai null
+        $gaData = $ga?->payload ?? [];
 
-        // Visite (ora da GA)
-        $visitsTotal = $gaData['visits_30d'] ?? 0;
+        // Visite (30gg) - chiave corretta dal tuo payload DB
+        $visitsTotal = (int) ($gaData['total_users_30'] ?? 0);
 
         // Site settings completeness
         $site = SiteSetting::query()->first();

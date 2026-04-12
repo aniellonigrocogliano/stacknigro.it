@@ -4,339 +4,407 @@
 
 @section('content')
 @php
-  // GA payload (dal controller: $gaData = $ga?->payload ?? null)
+  // GA payload (dal controller: $gaData = $ga?->payload ?? [])
   $ga = $gaData ?? [];
 
-  $gaVisits30 = data_get($ga, 'visits_30d');          // int
-  $gaPageviews30 = data_get($ga, 'pageviews_30d');    // int
+  // KPI 30gg
+  $gaVisits30    = data_get($ga, 'total_users_30');   // int
+  $gaPageviews30 = data_get($ga, 'pageviews_30');     // int
 
-  $topPagePath = data_get($ga, 'top_page_7d.path');   // string
-  $topPageViews = data_get($ga, 'top_page_7d.views'); // int
+  // Top (7gg)
+  $topPagePath   = data_get($ga, 'top_page.path');    // string
+  $topPageViews  = data_get($ga, 'top_page.views');   // int
 
-  $topSourceName = data_get($ga, 'top_source_7d.source');   // string
-  $topSourceSessions = data_get($ga, 'top_source_7d.sessions'); // int
+  $topSourceName     = data_get($ga, 'top_source.name');        // string
+  $topSourceSessions = data_get($ga, 'top_source.sessions');    // int
 
-  $topDeviceName = data_get($ga, 'top_device_7d.device');    // string
-  $topDeviceSessions = data_get($ga, 'top_device_7d.sessions'); // int
+  $topDeviceName     = (string) data_get($ga, 'top_device.device', data_get($ga, 'top_device', ''));
+  $topDeviceSessions = (int) data_get($ga, 'top_device.sessions', 0);
 
-  $ga7Labels = data_get($ga, 'last7.labels', []);
-  $ga7Visits = data_get($ga, 'last7.visits', []);
-  $ga7Pageviews = data_get($ga, 'last7.pageviews', []);
+  // Serie 7gg: array di {date,value}
+  $users7Series = data_get($ga, 'series_users_7', []);
+  $pv7Series    = data_get($ga, 'series_pageviews_7', []);
+
+  $ga7Labels = collect($users7Series)->pluck('date')->map(function ($d) {
+      return \Carbon\Carbon::createFromFormat('Ymd', (string)$d)->format('d/m');
+  })->values()->all();
+
+  $ga7Visits    = collect($users7Series)->pluck('value')->map(fn($v)=>(int)$v)->values()->all();
+  $ga7Pageviews = collect($pv7Series)->pluck('value')->map(fn($v)=>(int)$v)->values()->all();
+
+  // Serie 30gg
+  $users30Series = data_get($ga, 'series_users_30', []);
+  $pv30Series    = data_get($ga, 'series_pageviews_30', []);
+
+  $ga30Labels = collect($users30Series)->pluck('date')->map(fn ($d) =>
+      \Carbon\Carbon::createFromFormat('Ymd', (string)$d)->format('d/m')
+  )->values()->all();
+
+  $ga30Visits    = collect($users30Series)->pluck('value')->map(fn($v)=>(int)$v)->values()->all();
+  $ga30Pageviews = collect($pv30Series)->pluck('value')->map(fn($v)=>(int)$v)->values()->all();
 @endphp
 
 <div class="py-2 container-fluid">
 
-  <div class="row">
-    <div class="ms-3">
+  {{-- HEADER --}}
+  <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+    <div class="ms-1">
       <h3 class="mb-0 h4 font-weight-bolder">Dashboard</h3>
-      <p class="mb-4">Panoramica sito: Inbox, Preventivi, Portfolio e contenuti.</p>
+      <p class="mb-0">Panoramica sito: Inbox, Preventivi, Portfolio e contenuti.</p>
     </div>
 
-    {{-- PRIMA RIGA: 4 KPI --}}
-    <div class="row g-4">
-      {{-- KPI 1 --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Inbox non letti</p>
-                <h4 class="mb-0">{{ $inboxUnread }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-envelope"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              <a class="text-primary font-weight-bolder" href="{{ url('/admin/inbox') }}">Apri Inbox</a>
-            </p>
-          </div>
-        </div>
-      </div>
+    <div class="d-flex align-items-center gap-2">
 
-      {{-- KPI 2 --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Da rispondere</p>
-                <h4 class="mb-0">{{ $inboxToReply }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-reply"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Oggi: <span class="font-weight-bolder">{{ $inboxToday }}</span> messaggi
-            </p>
-          </div>
-        </div>
-      </div>
+      {{-- FORM (submit dal modal) --}}
+      <form id="f-clear-cache" method="POST" action="{{ route('admin.clear-cache') }}">
+        @csrf
 
-      {{-- KPI 3 --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Preventivi (30gg)</p>
-                <h4 class="mb-0">{{ $quotes30 }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-receipt"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Media: <span class="font-weight-bolder">
-                {{ $quoteAvgTotal ? number_format($quoteAvgTotal, 2, ',', '.') . ' €' : '—' }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
+        <button
+          type="button"
+          class="btn btn-warning btn-sm"
+          data-bs-toggle="modal"
+          data-bs-target="#modal-clear-cache"
+        >
+          <i class="fa-solid fa-broom me-1"></i> Pulisci cache
+        </button>
+      </form>
 
-      {{-- KPI 4 --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Sito completato</p>
-                <h4 class="mb-0">{{ $siteCompletion }}%</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-tasks"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Progetti: <span class="font-weight-bolder">{{ $projectsPublished }}</span> pubb. /
-              <span class="font-weight-bolder">{{ $projectsDraft }}</span> bozze
-            </p>
-          </div>
-        </div>
-      </div>
     </div>
-
-    {{-- SECONDA RIGA: 4 KPI EXTRA --}}
-    <div class="mt-1 row g-4">
-      {{-- Skills Totali --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Skills totali</p>
-                <h4 class="mb-0">{{ $skillsTotal ?? 0 }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-tools"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              <a class="text-primary font-weight-bolder" href="{{ url('/admin/skills') }}">Gestisci skills</a>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Progetti Totali --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Progetti totali</p>
-                <h4 class="mb-0">{{ $projectsTotal ?? 0 }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-folder-open"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              <a class="text-primary font-weight-bolder" href="{{ url('/admin/projects') }}">Gestisci progetti</a>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Foto Progetti --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Foto progetti</p>
-                <h4 class="mb-0">{{ $projectImagesTotal ?? 0 }}</h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-images"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Tot immagini caricate
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Visite (GA4) --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Visite (30gg)</p>
-                <h4 class="mb-0">
-                  {{ is_numeric($gaVisits30) ? number_format((int)$gaVisits30, 0, ',', '.') : '—' }}
-                </h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-chart-line"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              {{ is_numeric($gaVisits30) ? 'Dati GA4 (ultimi 30 giorni)' : 'GA non disponibile (offline / consenso / errore)' }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    {{-- TERZA RIGA: 4 CARD GA --}}
-    <div class="mt-1 row g-4">
-      {{-- Pageviews 30gg --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Pageviews (30gg)</p>
-                <h4 class="mb-0">
-                  {{ is_numeric($gaPageviews30) ? number_format((int)$gaPageviews30, 0, ',', '.') : '—' }}
-                </h4>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-eye"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">Visualizzazioni pagina</p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Top pagina 7gg --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Top pagina (7gg)</p>
-                <h6 class="mb-0 text-sm font-weight-bolder">
-                  {{ $topPagePath ?: '—' }}
-                </h6>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-file-lines"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Views: <span class="font-weight-bolder">
-                {{ is_numeric($topPageViews) ? number_format((int)$topPageViews, 0, ',', '.') : '—' }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Top sorgente 7gg --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Top sorgente (7gg)</p>
-                <h6 class="mb-0 text-sm font-weight-bolder">
-                  {{ $topSourceName ?: '—' }}
-                </h6>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-share-nodes"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Sessioni: <span class="font-weight-bolder">
-                {{ is_numeric($topSourceSessions) ? number_format((int)$topSourceSessions, 0, ',', '.') : '—' }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {{-- Device 7gg --}}
-      <div class="col-xl-3 col-sm-6">
-        <div class="card">
-          <div class="p-2 card-header ps-3">
-            <div class="d-flex justify-content-between">
-              <div>
-                <p class="mb-0 text-sm text-capitalize">Device (7gg)</p>
-                <h6 class="mb-0 text-sm font-weight-bolder">
-                  {{ $topDeviceName ?: '—' }}
-                </h6>
-              </div>
-              <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
-                <i class="text-white fas fa-mobile-screen-button"></i>
-              </div>
-            </div>
-          </div>
-          <hr class="my-0 dark horizontal">
-          <div class="p-2 card-footer ps-3">
-            <p class="mb-0 text-sm">
-              Sessioni: <span class="font-weight-bolder">
-                {{ is_numeric($topDeviceSessions) ? number_format((int)$topDeviceSessions, 0, ',', '.') : '—' }}
-              </span>
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
   </div>
 
-  {{-- GA CHARTS: 2 BARRE (7 giorni) --}}
+  {{-- MODAL CONFERMA PULISCI CACHE --}}
+  <div class="modal fade" id="modal-clear-cache" tabindex="-1" aria-labelledby="modal-clear-cache-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title" id="modal-clear-cache-label">
+            Pulisci cache
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+        </div>
+
+        <div class="modal-body">
+          <p class="mb-2">
+            Vuoi davvero pulire la cache Laravel?
+          </p>
+          <ul class="mb-0">
+            <li>config</li>
+            <li>route</li>
+            <li>view</li>
+            <li>optimize</li>
+          </ul>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">
+            Annulla
+          </button>
+
+          <button type="button" class="btn btn-warning btn-sm" id="btn-confirm-clear-cache">
+            <i class="fa-solid fa-broom me-1"></i> Sì, pulisci cache
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  {{-- PRIMA RIGA: 4 KPI --}}
+  <div class="row g-4">
+    {{-- KPI 1 --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Inbox non letti</p>
+              <h4 class="mb-0">{{ $inboxUnread }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-envelope"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            <a class="text-primary font-weight-bolder" href="{{ url('/admin/inbox') }}">Apri Inbox</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- KPI 2 --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Da rispondere</p>
+              <h4 class="mb-0">{{ $inboxToReply }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-reply"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Oggi: <span class="font-weight-bolder">{{ $inboxToday }}</span> messaggi
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- KPI 3 --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Preventivi (30gg)</p>
+              <h4 class="mb-0">{{ $quotes30 }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-receipt"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Media: <span class="font-weight-bolder">
+              {{ $quoteAvgTotal ? number_format($quoteAvgTotal, 2, ',', '.') . ' €' : '—' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- KPI 4 --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Sito completato</p>
+              <h4 class="mb-0">{{ $siteCompletion }}%</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-tasks"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Progetti: <span class="font-weight-bolder">{{ $projectsPublished }}</span> pubb. /
+            <span class="font-weight-bolder">{{ $projectsDraft }}</span> bozze
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- SECONDA RIGA: 4 KPI EXTRA --}}
+  <div class="mt-1 row g-4">
+    {{-- Skills Totali --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Skills totali</p>
+              <h4 class="mb-0">{{ $skillsTotal ?? 0 }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-tools"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            <a class="text-primary font-weight-bolder" href="{{ url('/admin/skills') }}">Gestisci skills</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Progetti Totali --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Progetti totali</p>
+              <h4 class="mb-0">{{ $projectsTotal ?? 0 }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-folder-open"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            <a class="text-primary font-weight-bolder" href="{{ url('/admin/projects') }}">Gestisci progetti</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Foto Progetti --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Foto progetti</p>
+              <h4 class="mb-0">{{ $projectImagesTotal ?? 0 }}</h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-images"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">Tot immagini caricate</p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Visite (GA4) --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Visite (30gg)</p>
+              <h4 class="mb-0">
+                {{ is_numeric($gaVisits30) ? number_format((int)$gaVisits30, 0, ',', '.') : '—' }}
+              </h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-chart-line"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            {{ is_numeric($gaVisits30) ? 'Dati GA4 (ultimi 30 giorni)' : 'GA non disponibile (offline / consenso / errore)' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- TERZA RIGA: 4 CARD GA --}}
+  <div class="mt-1 row g-4">
+    {{-- Pageviews 30gg --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Pageviews (30gg)</p>
+              <h4 class="mb-0">
+                {{ is_numeric($gaPageviews30) ? number_format((int)$gaPageviews30, 0, ',', '.') : '—' }}
+              </h4>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-eye"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">Visualizzazioni pagina</p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Top pagina 7gg --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Top pagina (7gg)</p>
+              <h6 class="mb-0 text-sm font-weight-bolder">{{ $topPagePath ?: '—' }}</h6>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-file-lines"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Views: <span class="font-weight-bolder">
+              {{ is_numeric($topPageViews) ? number_format((int)$topPageViews, 0, ',', '.') : '—' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Top sorgente 7gg --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Top sorgente (7gg)</p>
+              <h6 class="mb-0 text-sm font-weight-bolder">{{ $topSourceName ?: '—' }}</h6>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-share-nodes"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Sessioni: <span class="font-weight-bolder">
+              {{ is_numeric($topSourceSessions) ? number_format((int)$topSourceSessions, 0, ',', '.') : '—' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    {{-- Device 7gg --}}
+    <div class="col-xl-3 col-sm-6">
+      <div class="card">
+        <div class="p-2 card-header ps-3">
+          <div class="d-flex justify-content-between">
+            <div>
+              <p class="mb-0 text-sm text-capitalize">Device (7gg)</p>
+              <h6 class="mb-0 text-sm font-weight-bolder">{{ $topDeviceName ?: '—' }}</h6>
+            </div>
+            <div class="text-center shadow icon icon-md icon-shape bg-gradient-dark shadow-dark border-radius-lg">
+              <i class="text-white fas fa-mobile-screen-button"></i>
+            </div>
+          </div>
+        </div>
+        <hr class="my-0 dark horizontal">
+        <div class="p-2 card-footer ps-3">
+          <p class="mb-0 text-sm">
+            Sessioni: <span class="font-weight-bolder">
+              {{ is_numeric($topDeviceSessions) ? number_format((int)$topDeviceSessions, 0, ',', '.') : '—' }}
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- GA CHARTS: 7 giorni --}}
   <div class="mt-4 row g-4">
     <div class="col-lg-6 col-md-12">
       <div class="card">
@@ -371,6 +439,33 @@
           <div class="d-flex">
             <i class="my-auto text-sm material-symbols-rounded me-1">schedule</i>
             <p class="mb-0 text-sm">dati ultimi 7 giorni</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {{-- GA CHARTS: 30 giorni --}}
+  <div class="mt-4 row g-4">
+    <div class="col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-0">Visite ultimi 30 giorni</h6>
+          <p class="text-sm">GA4 (sessions)</p>
+          <div class="chart">
+            <canvas id="chart-ga-visits-30d" height="170"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-6 col-md-12">
+      <div class="card">
+        <div class="card-body">
+          <h6 class="mb-0">Pageviews ultimi 30 giorni</h6>
+          <p class="text-sm">GA4 (screenPageViews)</p>
+          <div class="chart">
+            <canvas id="chart-ga-pageviews-30d" height="170"></canvas>
           </div>
         </div>
       </div>
@@ -418,10 +513,10 @@
     </div>
   </div>
 
-  {{-- BOTTOM ROW: Attività recente a sinistra + (Ultimi messaggi + Checklist) a destra --}}
+  {{-- BOTTOM ROW --}}
   <div class="mt-4 mb-4 row g-4">
 
-    {{-- Attività recente (SINISTRA) --}}
+    {{-- Attività recente --}}
     <div class="col-lg-4 col-md-6">
       <div class="card h-100">
         <div class="pb-0 card-header">
@@ -433,7 +528,6 @@
         </div>
         <div class="p-3 card-body">
           <div class="timeline timeline-one-side">
-
             @foreach($lastQuotes as $q)
               @php
                 $total = null;
@@ -542,7 +636,7 @@
         </div>
       </div>
 
-      {{-- Checklist contenuti sito (SISTEMATA) --}}
+      {{-- Checklist --}}
       <div class="mt-4 card">
         <div class="pb-0 card-header">
           <h6>Checklist contenuti sito</h6>
@@ -577,30 +671,88 @@
 
 @push('scripts')
 <script>
-  // Chart.js (assumo già incluso dal layout Material Dashboard)
+document.addEventListener('DOMContentLoaded', () => {
 
-  // TUOI CHART
+  // ====== MODAL: conferma pulisci cache ======
+  const btnConfirm = document.getElementById('btn-confirm-clear-cache');
+  if (btnConfirm) {
+    btnConfirm.addEventListener('click', () => {
+      const form = document.getElementById('f-clear-cache');
+      if (!form) return;
+
+      // chiudi modal (se bootstrap è presente)
+      const modalEl = document.getElementById('modal-clear-cache');
+      try {
+        const modal = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl);
+        modal.hide();
+      } catch (e) {}
+
+      form.submit();
+    });
+  }
+
+  // ====== TUOI CHART ======
   const inboxLabels = @json($chartInboxLabels);
-  const inboxData = @json($chartInboxData);
+  const inboxData   = @json($chartInboxData);
 
   const quoteLabels = @json($chartQuoteLabels);
-  const quoteData = @json($chartQuoteData);
+  const quoteData   = @json($chartQuoteData);
 
-  // GA CHARTS
-  const ga7Labels = @json($ga7Labels);
-  const ga7Visits = @json($ga7Visits);
-  const ga7Pageviews = @json($ga7Pageviews);
+  // ====== GA CHARTS ======
+  const ga7Labels     = @json($ga7Labels);
+  const ga7Visits     = @json($ga7Visits);
+  const ga7Pageviews  = @json($ga7Pageviews);
 
-  // GA VISITS (BAR)
+  const ga30Labels    = @json($ga30Labels);
+  const ga30Visits    = @json($ga30Visits);
+  const ga30Pageviews = @json($ga30Pageviews);
+
+  // VISITS 30gg
+  const ctxGaVisits30 = document.getElementById('chart-ga-visits-30d')?.getContext('2d');
+  if (ctxGaVisits30 && Array.isArray(ga30Labels) && ga30Labels.length) {
+    new Chart(ctxGaVisits30, {
+      type: 'bar',
+      data: {
+        labels: ga30Labels,
+        datasets: [{
+          label: 'Visite',
+          data: ga30Visits,
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: { responsive: true, plugins:{legend:{display:false}} }
+    });
+  }
+
+  // PAGEVIEWS 30gg
+  const ctxGaPv30 = document.getElementById('chart-ga-pageviews-30d')?.getContext('2d');
+  if (ctxGaPv30 && Array.isArray(ga30Labels) && ga30Labels.length) {
+    new Chart(ctxGaPv30, {
+      type: 'bar',
+      data: {
+        labels: ga30Labels,
+        datasets: [{
+          label: 'Pageviews',
+          data: ga30Pageviews,
+          borderRadius: 4,
+          borderSkipped: false
+        }]
+      },
+      options: { responsive: true, plugins:{legend:{display:false}} }
+    });
+  }
+
+  // GA VISITS (7d)
   const ctxGaVisits = document.getElementById('chart-ga-visits-7d')?.getContext('2d');
-  if (ctxGaVisits && window.Chart && Array.isArray(ga7Labels) && ga7Labels.length) {
+  if (ctxGaVisits && Array.isArray(ga7Labels) && ga7Labels.length) {
     new Chart(ctxGaVisits, {
       type: 'bar',
       data: {
         labels: ga7Labels,
         datasets: [{
           label: 'Visite',
-          data: ga7Visits,
+          data: Array.isArray(ga7Visits) ? ga7Visits : [],
           borderWidth: 0,
           borderRadius: 4,
           borderSkipped: false,
@@ -616,16 +768,16 @@
     });
   }
 
-  // GA PAGEVIEWS (BAR)
+  // GA PAGEVIEWS (7d)
   const ctxGaPv = document.getElementById('chart-ga-pageviews-7d')?.getContext('2d');
-  if (ctxGaPv && window.Chart && Array.isArray(ga7Labels) && ga7Labels.length) {
+  if (ctxGaPv && Array.isArray(ga7Labels) && ga7Labels.length) {
     new Chart(ctxGaPv, {
       type: 'bar',
       data: {
         labels: ga7Labels,
         datasets: [{
           label: 'Pageviews',
-          data: ga7Pageviews,
+          data: Array.isArray(ga7Pageviews) ? ga7Pageviews : [],
           borderWidth: 0,
           borderRadius: 4,
           borderSkipped: false,
@@ -643,7 +795,7 @@
 
   // INBOX (BAR)
   const ctxInbox = document.getElementById('chart-inbox')?.getContext('2d');
-  if (ctxInbox && window.Chart) {
+  if (ctxInbox) {
     new Chart(ctxInbox, {
       type: 'bar',
       data: {
@@ -668,7 +820,7 @@
 
   // QUOTES (LINE)
   const ctxQuotes = document.getElementById('chart-quotes')?.getContext('2d');
-  if (ctxQuotes && window.Chart) {
+  if (ctxQuotes) {
     new Chart(ctxQuotes, {
       type: 'line',
       data: {
@@ -690,5 +842,7 @@
       }
     });
   }
+
+});
 </script>
 @endpush

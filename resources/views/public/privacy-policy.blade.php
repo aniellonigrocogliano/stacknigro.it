@@ -10,56 +10,57 @@
   {{-- NAV TABS (Bootstrap) --}}
   <div class="mb-4 nav-wrapper position-relative end-0">
     <ul class="p-1 nav nav-pills nav-fill" id="policyTabs" role="tablist">
+
+      {{-- COOKIES (prima) --}}
       <li class="nav-item" role="presentation">
         <a class="px-0 py-1 mb-0 nav-link active"
-           id="privacy-tab"
-           data-bs-toggle="tab"
-           href="#privacy"
-           role="tab"
-           aria-controls="privacy"
-           aria-selected="true">
-          <i class="mb-1 align-middle fa-solid fa-user-shield me-1"></i>
-          Privacy
-        </a>
-      </li>
-
-      <li class="nav-item" role="presentation">
-        <a class="px-0 py-1 mb-0 nav-link"
            id="cookies-tab"
            data-bs-toggle="tab"
            href="#cookies"
            role="tab"
            aria-controls="cookies"
-           aria-selected="false">
+           aria-selected="true">
           <i class="mb-1 align-middle fa-solid fa-cookie-bite me-1"></i>
           Cookies
         </a>
       </li>
+
+      {{-- PRIVACY (seconda) --}}
+      <li class="nav-item" role="presentation">
+        <a class="px-0 py-1 mb-0 nav-link"
+           id="privacy-tab"
+           data-bs-toggle="tab"
+           href="#privacy"
+           role="tab"
+           aria-controls="privacy"
+           aria-selected="false">
+          <i class="mb-1 align-middle fa-solid fa-user-shield me-1"></i>
+          Privacy
+        </a>
+      </li>
+
+      {{-- CAPTCHA (ultima) --}}
+      <li class="nav-item" role="presentation">
+        <a class="px-0 py-1 mb-0 nav-link"
+           id="captcha-tab"
+           data-bs-toggle="tab"
+           href="#captcha"
+           role="tab"
+           aria-controls="captcha"
+           aria-selected="false">
+          <i class="mb-1 align-middle fa-solid fa-shield-halved me-1"></i>
+          CAPTCHA
+        </a>
+      </li>
+
     </ul>
   </div>
 
   {{-- TAB CONTENT --}}
   <div class="tab-content" id="policyTabsContent">
 
-    {{-- PRIVACY --}}
-    <div class="tab-pane fade show active"
-         id="privacy"
-         role="tabpanel"
-         aria-labelledby="privacy-tab">
-      {{-- Ancora esterna --}}
-      <a id="privacy-anchor"></a>
-
-      @if(!empty($privacy?->content))
-        {!! $privacy->content !!}
-      @else
-        <div class="alert alert-warning">
-          La police privacy ancora non è stata pubblicata.
-        </div>
-      @endif
-    </div>
-
     {{-- COOKIES --}}
-    <div class="tab-pane fade"
+    <div class="tab-pane fade show active"
          id="cookies"
          role="tabpanel"
          aria-labelledby="cookies-tab">
@@ -70,7 +71,7 @@
         {!! $cookies->content !!}
       @else
         <div class="alert alert-warning">
-          La police cookies ancora non è stata pubblicata.
+          La policy cookies ancora non è stata pubblicata.
         </div>
       @endif
 
@@ -78,19 +79,53 @@
       @include('public.partials.cookie-preferences-box')
     </div>
 
+    {{-- PRIVACY --}}
+    <div class="tab-pane fade"
+         id="privacy"
+         role="tabpanel"
+         aria-labelledby="privacy-tab">
+      {{-- Ancora esterna --}}
+      <a id="privacy-anchor"></a>
+
+      @if(!empty($privacy?->content))
+        {!! $privacy->content !!}
+      @else
+        <div class="alert alert-warning">
+          La policy privacy ancora non è stata pubblicata.
+        </div>
+      @endif
+    </div>
+
+    {{-- CAPTCHA --}}
+    <div class="tab-pane fade"
+         id="captcha"
+         role="tabpanel"
+         aria-labelledby="captcha-tab">
+      {{-- ✅ Ancora “vera” per link #captcha --}}
+      <a id="captcha-anchor"></a>
+
+      @if(!empty($captcha?->content))
+        {!! $captcha->content !!}
+      @else
+        <div class="alert alert-warning">
+          La policy CAPTCHA ancora non è stata pubblicata.
+        </div>
+      @endif
+    </div>
+
   </div>
 </div>
 
-{{-- Apri tab giusta se arrivi con #cookies o #privacy --}}
+{{-- Apri tab giusta se arrivi con #cookies / #privacy / #captcha --}}
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // accetta sia #cookies che #cookies-anchor
   const hash = (window.location.hash || '').toLowerCase();
 
   let target = null;
   if (hash === '#cookies' || hash === '#cookies-anchor') target = '#cookies';
   if (hash === '#privacy' || hash === '#privacy-anchor') target = '#privacy';
+  if (hash === '#captcha' || hash === '#captcha-anchor') target = '#captcha';
 
   if (!target) return;
 

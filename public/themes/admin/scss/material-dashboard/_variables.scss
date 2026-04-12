@@ -4,7 +4,7 @@
 // consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
 
 
-// Color system 
+// Color system
 
 // gray neutral
 
@@ -58,14 +58,14 @@ $colors: (
 ) !default;
 // scss-docs-end colors-map
 
-$primary:       #e91e63 !default;
-$secondary:     $gray-500 !default;
+$primary:        #03a9f4 !default;
+$secondary:     #7b809a !default;
 $info:          #1A73E8 !default;
 $success:       #4CAF50 !default;
 $warning:       #fb8c00 !default;
 $danger:        #F44335 !default;
-$light:         $gray-200 !default;
-$dark:          $gray-800 !default;
+$light:         #e9ecef !default;
+$dark:          #343a40 !default;
 $dark-blue:     #1A237E !default;
 
 
@@ -86,8 +86,8 @@ $theme-colors: (
 
 
 // Gradient colors
-$primary-gradient:            #EC407A !default;
-$primary-gradient-state:      #D81B60 !default;
+$primary-gradient:            #03a9f4 !default;
+$primary-gradient-state:      #1A73E8 !default;
 
 $secondary-gradient:          #747b8a !default;
 $secondary-gradient-state:    #495361 !default;

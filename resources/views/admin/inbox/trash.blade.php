@@ -63,9 +63,11 @@
                 {{ $c->subject ?: '—' }}
               </td>
 
-              <td class="text-sm">
+<td class="text-sm">
                 @if($c->source === 'quote')
                   <i class="fa-solid fa-calculator me-1"></i>Preventivo
+                @elseif($c->source === 'package')
+                  <i class="fa-solid fa-box me-1"></i>Pacchetto
                 @else
                   <i class="fa-solid fa-envelope me-1"></i>Contatto
                 @endif

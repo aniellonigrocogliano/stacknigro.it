@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Intervention\Image\ImageManager;
 use Intervention\Image\Drivers\Gd\Driver;
+use Illuminate\Support\Facades\DB;
 
 class ProjectController extends Controller
 {
@@ -24,7 +25,12 @@ class ProjectController extends Controller
 
     public function index()
     {
-        $projects = Project::withCount('images')->latest()->get();
+        // ✅ ordine manuale: sort_order ASC, fallback id DESC
+        $projects = Project::withCount('images')
+            ->orderBy('sort_order')
+            ->orderByDesc('id')
+            ->get();
+
         return view('admin.projects.index', compact('projects'));
     }
 
@@ -48,12 +54,17 @@ class ProjectController extends Controller
             'images.*'     => ['nullable', 'image', "max:$maxKb"],
         ]);
 
+        // ✅ nuovo progetto: va in fondo (ultimo sort_order + 1)
+        $nextSort = (int) (Project::max('sort_order') ?? 0);
+        $nextSort = $nextSort > 0 ? $nextSort + 1 : 1;
+
         $project = Project::create([
             'title'        => $data['title'],
             'slug'         => Str::slug($data['title']) . '-' . Str::lower(Str::random(6)),
             'excerpt'      => $data['excerpt'] ?? null,
             'body'         => $data['body'] ?? null,
             'is_published' => (bool)($data['is_published'] ?? true),
+            'sort_order'   => $nextSort, // ✅
         ]);
 
         $this->storeImages($project, $request);
@@ -91,6 +102,7 @@ class ProjectController extends Controller
             'excerpt'      => $data['excerpt'] ?? null,
             'body'         => $data['body'] ?? null,
             'is_published' => (bool)($data['is_published'] ?? false),
+            // sort_order NON lo tocchiamo qui: lo gestisci dal drag&drop
         ]);
 
         $this->storeImages($project, $request);
@@ -135,18 +147,22 @@ class ProjectController extends Controller
         return redirect()->route('admin.projects.edit', $projectId)->with('success', 'Immagine eliminata.');
     }
 
-    public function setCover(ProjectImage $image)
+    public function setCover(Project $project, ProjectImage $image)
     {
-        $project = $image->project;
+        // sicurezza: l'immagine deve appartenere a quel progetto
+        abort_unless($image->project_id === $project->id, 404);
 
-        $project->images()->update(['is_cover' => 0]);
-        $image->update(['is_cover' => 1]);
+        DB::transaction(function () use ($project, $image) {
+            $project->images()->update(['is_cover' => 0]);
+            $image->update(['is_cover' => 1]);
+        });
 
-        // ✅ reload immediato così vedi subito stellina/ordine cover-first
-        return redirect()->route('admin.projects.edit', $project)->with('success', 'Cover aggiornata.');
+        return redirect()
+            ->route('admin.projects.edit', $project)
+            ->with('success', 'Cover aggiornata.');
     }
 
-    // ✅ DRAG&DROP: salva sort_order
+    // ✅ DRAG&DROP: salva sort_order IMMAGINI
     public function sortImages(Request $request, Project $project)
     {
         $data = $request->validate([
@@ -163,6 +179,28 @@ class ProjectController extends Controller
         foreach ($data['ids'] as $id) {
             if (!isset($images[$id])) continue;
             $images[$id]->update(['sort_order' => $order]);
+            $order++;
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    // ✅ DRAG&DROP: salva sort_order PROGETTI (come contatti)
+    public function reorder(Request $request)
+    {
+        $data = $request->validate([
+            'ids'   => ['required', 'array'],
+            'ids.*' => ['integer'],
+        ]);
+
+        $projects = Project::whereIn('id', $data['ids'])
+            ->get()
+            ->keyBy('id');
+
+        $order = 1;
+        foreach ($data['ids'] as $id) {
+            if (!isset($projects[$id])) continue;
+            $projects[$id]->update(['sort_order' => $order]);
             $order++;
         }
 

@@ -185,8 +185,10 @@
           <div class="mb-3">
             <div class="text-xs text-muted">Sorgente</div>
             <div class="text-sm">
-              @if($conversation->source === 'quote')
+@if($conversation->source === 'quote')
                 <i class="fa-solid fa-calculator me-1"></i>Preventivo
+              @elseif($conversation->source === 'package')
+                <i class="fa-solid fa-box me-1"></i>Pacchetto
               @else
                 <i class="fa-solid fa-envelope me-1"></i>Contatto
               @endif
@@ -299,9 +301,9 @@
             <div class="gap-2 mt-2 col-12 d-flex justify-content-end">
               <button
                 type="button"
-                class="btn btn-primary js-confirm"
+                class="btn btn-success js-confirm"
                 data-title="Invio risposta"
-                data-body="Confermi l'invio della risposta via email?
+                data-body="Confermi l'invio della risposta via email?"
                 data-form="f-reply"
               >
                 <i class="fa-solid fa-paper-plane me-1"></i> Invia risposta

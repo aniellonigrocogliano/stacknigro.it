@@ -14,7 +14,6 @@
         <h2>Progetto</h2>
         <div>
           <span>{{ $project->title }}</span>
-          <span class="description-title">dettagli</span>
         </div>
       </div>
 

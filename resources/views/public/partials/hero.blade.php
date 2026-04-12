@@ -18,10 +18,12 @@
         <div class="col-lg-4 order-lg-last hero-img" data-aos="zoom-out" data-aos-delay="100">
           {{-- qui metto il logo dinamico (quello che carichi dal pannello) --}}
           <img
-            src="{{ $site?->logo_path ? asset('storage/'.$site->logo_path) : asset('themes/bootslander/img/hero-img.png') }}"
-            class="img-fluid animated"
-            alt="hero logo"
-          >
+  src="{{ $site?->logo_path
+    ? asset('storage/'.$site->logo_path).'?v='.($site->updated_at?->timestamp ?? time())
+    : asset('themes/bootslander/img/hero-img.png') }}"
+  class="img-fluid animated"
+  alt="hero logo"
+>
         </div>
 
 @if(!empty($site?->hero_title))

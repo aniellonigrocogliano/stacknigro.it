@@ -13,11 +13,25 @@
     <button type="button"
             class="btn btn-success btn-sm js-confirm"
             data-title="Salva impostazioni"
-            data-body="Confermi il salvataggio di Policy/Cookie/Banner/Analytics?"
+            data-body="Confermi il salvataggio di Policy/Cookie/CAPTCHA/Banner/Analytics?"
             data-form="f-legal-save">
       <i class="fa-solid fa-floppy-disk me-1"></i> Salva
     </button>
   </div>
+
+  @if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+  @endif
+
+  @if ($errors->any())
+    <div class="alert alert-danger">
+      <ul class="mb-0">
+        @foreach ($errors->all() as $error)
+          <li>{{ $error }}</li>
+        @endforeach
+      </ul>
+    </div>
+  @endif
 
   <form id="f-legal-save" method="POST" action="{{ route('legal.update') }}">
     @csrf
@@ -49,6 +63,18 @@
                  aria-selected="false">
                 <i class="mb-1 align-middle fa-solid fa-cookie-bite me-1"></i>
                 Cookie
+              </a>
+            </li>
+
+            {{-- ✅ NEW TAB CAPTCHA --}}
+            <li class="nav-item">
+              <a class="px-0 py-1 mb-0 nav-link"
+                 data-bs-toggle="tab"
+                 href="#tab-captcha"
+                 role="tab"
+                 aria-selected="false">
+                <i class="mb-1 align-middle fa-solid fa-shield-halved me-1"></i>
+                CAPTCHA
               </a>
             </li>
 
@@ -87,14 +113,15 @@
                 <input type="text" name="privacy_title" class="form-control"
                        value="{{ old('privacy_title', $privacy->title) }}">
               </div>
+
               <div class="col-12">
                 <label class="form-label">Testo Privacy Policy</label>
-                <<textarea
-  id="privacy_editor"
-  name="privacy_content"
-  rows="14"
-  class="form-control"
->{{ old('privacy_content', $privacy->content) }}</textarea>
+                <textarea
+                  id="privacy_editor"
+                  name="privacy_content"
+                  rows="14"
+                  class="form-control"
+                >{{ old('privacy_content', $privacy->content) }}</textarea>
               </div>
             </div>
           </div>
@@ -107,15 +134,39 @@
                 <input type="text" name="cookie_title" class="form-control"
                        value="{{ old('cookie_title', $cookie->title) }}">
               </div>
+
               <div class="col-12">
                 <label class="form-label">Testo Cookie Policy</label>
-                {{-- COOKIE --}}
-<textarea
-  id="cookie_editor"
-  name="cookie_content"
-  rows="14"
-  class="form-control"
->{{ old('cookie_content', $cookie->content) }}</textarea>
+                <textarea
+                  id="cookie_editor"
+                  name="cookie_content"
+                  rows="14"
+                  class="form-control"
+                >{{ old('cookie_content', $cookie->content) }}</textarea>
+              </div>
+            </div>
+          </div>
+
+          {{-- ✅ CAPTCHA --}}
+          <div class="tab-pane fade" id="tab-captcha" role="tabpanel">
+            <div class="row g-3">
+              <div class="col-12">
+                <label class="form-label">Titolo CAPTCHA</label>
+                <input type="text" name="captcha_title" class="form-control"
+                       value="{{ old('captcha_title', $captcha->title) }}">
+              </div>
+
+              <div class="col-12">
+                <label class="form-label">Testo CAPTCHA Policy</label>
+                <div class="mb-2 text-xs text-muted">
+                  Questo testo verrà richiamato nel frontend con l’ancora <code>#captcha</code>.
+                </div>
+                <textarea
+                  id="captcha_editor"
+                  name="captcha_content"
+                  rows="14"
+                  class="form-control"
+                >{{ old('captcha_content', $captcha->content) }}</textarea>
               </div>
             </div>
           </div>
@@ -185,7 +236,7 @@
     </div>
   </form>
 
-  {{-- MODAL CONFERMA (no Windows alert) --}}
+  {{-- MODAL CONFERMA (no window.alert) --}}
   <div class="modal fade" id="confirmActionModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
       <div class="modal-content">
@@ -206,11 +257,13 @@
 @endsection
 
 @push('scripts')
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const modalEl = document.getElementById('confirmActionModal');
-    if (!modalEl || typeof bootstrap === 'undefined') return;
+<script src="{{ asset('vendor/tinymce/tinymce.min.js') }}"></script>
 
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  // ===== Modal conferma =====
+  const modalEl = document.getElementById('confirmActionModal');
+  if (modalEl && typeof bootstrap !== 'undefined') {
     const modal = new bootstrap.Modal(modalEl);
     const titleEl = document.getElementById('confirmActionTitle');
     const bodyEl  = document.getElementById('confirmActionBody');
@@ -234,21 +287,18 @@
       if (form) form.submit();
     });
 
-    modalEl.addEventListener('hidden.bs.modal', () => {
-      pendingFormId = null;
-    });
-  });
+    modalEl.addEventListener('hidden.bs.modal', () => pendingFormId = null);
+  }
 
-  @push('scripts')
-<script src="{{ asset('vendor/tinymce/tinymce.min.js') }}"></script>
+  // ===== TinyMCE =====
+  if (typeof tinymce === 'undefined') return;
 
-<script>
-  // rimuove eventuali istanze precedenti
   tinymce.remove('#privacy_editor');
   tinymce.remove('#cookie_editor');
+  tinymce.remove('#captcha_editor');
 
   tinymce.init({
-    selector: '#privacy_editor, #cookie_editor',
+    selector: '#privacy_editor, #cookie_editor, #captcha_editor',
     height: 650,
     resize: true,
     menubar: true,
@@ -269,10 +319,7 @@
       };
 
       xhr.onload = () => {
-        if (xhr.status < 200 || xhr.status >= 300) {
-          reject('Upload fallito: ' + xhr.status);
-          return;
-        }
+        if (xhr.status < 200 || xhr.status >= 300) return reject('Upload fallito: ' + xhr.status);
         let json = {};
         try { json = JSON.parse(xhr.responseText); } catch(e) {}
         if (!json.location) return reject('Risposta server senza location');
@@ -293,8 +340,6 @@
       });
     }
   });
-</script>
-@endpush
-
+});
 </script>
 @endpush

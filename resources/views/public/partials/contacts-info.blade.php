@@ -6,32 +6,20 @@
         <h3>{{ $contact->name }}</h3>
 
         @php
-          $value = $contact->value;
-          $type  = strtolower($contact->name);
+          $label = $contact->value;               // testo visibile
+          $href  = $contact->href;                // link reale
+          $blank = (bool) $contact->target_blank; // nuova scheda
         @endphp
 
         <p>
-          @if(str_contains($type, 'email'))
-            <a href="mailto:{{ $value }}">{{ $value }}</a>
-
-          @elseif(str_contains($type, 'pec'))
-            <a href="mailto:{{ $value }}">{{ $value }}</a>
-
-          @elseif(str_contains($type, 'telefono'))
-            <a href="tel:{{ preg_replace('/\s+/', '', $value) }}">{{ $value }}</a>
-
-          @elseif(str_contains($type, 'whatsapp'))
-            <a href="https://wa.me/{{ preg_replace('/\D/', '', $value) }}" target="_blank">
-              {{ $value }}
+          @if(!empty($href))
+            <a href="{{ $href }}"
+               class="text-nowrap"
+               @if($blank) target="_blank" rel="noopener" @endif>
+              {{ $label }}
             </a>
-
-          @elseif(str_contains($type, 'linkedin') || str_contains($type, 'github'))
-            <a href="{{ $value }}" target="_blank" rel="noopener">
-              {{ $value }}
-            </a>
-
           @else
-            {{ $value }}
+            <span class="text-nowrap">{{ $label }}</span>
           @endif
         </p>
 
@@ -39,3 +27,4 @@
     </div>
   @endforeach
 </div>
+

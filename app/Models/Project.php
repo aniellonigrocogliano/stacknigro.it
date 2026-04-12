@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-  protected $fillable = ['title','slug','excerpt','body','is_published'];
+  protected $fillable = ['title','slug','excerpt','body','is_published','sort_order'];
 
   public function images(): HasMany
   {

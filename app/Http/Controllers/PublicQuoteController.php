@@ -5,13 +5,36 @@ namespace App\Http\Controllers;
 use App\Models\InboxConversation;
 use App\Models\QuoteLevel;
 use App\Models\QuoteRule;
+use App\Models\QuotePackage;
 use Illuminate\Http\Request;
 
 class PublicQuoteController extends Controller
 {
-    public function index()
+    // Aggiunto il parametro $slug (opzionale)
+    public function index(Request $request, $slug = null)
     {
-        // livelli attivi + opzioni attive + pivot
+        // 1. Carichiamo i PACCHETTI (Le Card)
+        $packages = QuotePackage::query()
+            ->where('is_active', 1)
+            ->with('options.levels')
+            ->orderBy('sort_order')
+            ->get();
+
+        // --- NUOVA LOGICA SLUG ---
+        $selectedPackage = null;
+        if ($slug) {
+            $selectedPackage = QuotePackage::where('slug', $slug)
+                ->where('is_active', 1)
+                ->first();
+
+            // Se lo slug è errato, reindirizziamo alla pagina base
+            if (!$selectedPackage) {
+                return redirect()->route('public.quotes.index');
+            }
+        }
+        // -------------------------
+
+        // 2. Carichiamo i LIVELLI (Il Wizard)
         $levels = QuoteLevel::query()
             ->where('is_active', 1)
             ->orderBy('sort_order')
@@ -24,19 +47,17 @@ class PublicQuoteController extends Controller
             }])
             ->get();
 
-        // regole (tutte, poi in JS decidiamo)
         $rules = QuoteRule::query()
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
 
-        // per evitare l’errore Blade dentro @json con fn() / array []
-        // preparo qui i dati “puliti” per JS
+        // Preparazione dati puliti per JS (Wizard)
         $levelsForJs = $levels->map(function ($l) {
             return [
                 'id' => (int) $l->id,
                 'name' => (string) $l->name,
-                'selection_type' => (string) $l->selection_type, // 'single' | 'multi'
+                'selection_type' => (string) $l->selection_type,
             ];
         })->values();
 
@@ -50,23 +71,12 @@ class PublicQuoteController extends Controller
             ];
         })->values();
 
-        // IDs opzioni che “possono” comparire perché target di show_option (anche se non default)
-        $ruleTargetOptionIds = $rules
-            ->whereIn('action_type', ['show_option'])
-            ->pluck('target_option_id')
-            ->filter()
-            ->unique()
-            ->values();
-
-        // (opzionale) IDs livelli toccati da show/hide level
-        $ruleTargetLevelIds = $rules
-            ->whereIn('action_type', ['show_level', 'hide_level'])
-            ->pluck('target_level_id')
-            ->filter()
-            ->unique()
-            ->values();
+        $ruleTargetOptionIds = $rules->whereIn('action_type', ['show_option'])->pluck('target_option_id')->filter()->unique()->values();
+        $ruleTargetLevelIds = $rules->whereIn('action_type', ['show_level', 'hide_level'])->pluck('target_level_id')->filter()->unique()->values();
 
         return view('public.quotes', [
+            'packages' => $packages,
+            'selectedPackage' => $selectedPackage, // <-- PASSATO ALLA VISTA
             'levels' => $levels,
             'rules' => $rules,
             'levelsForJs' => $levelsForJs,
@@ -78,66 +88,52 @@ class PublicQuoteController extends Controller
 
     public function store(Request $request)
     {
-        $mode = $request->input('mode', 'send'); // send | anonymous
+        $mode = $request->input('mode', 'send');
+        $packageId = $request->input('package_id');
 
-        // payload calcolato lato JS
-        $quotePayload = $request->input('quote_payload'); // json string
-        $quoteSummary = (string) $request->input('quote_summary', 'Preventivo');
-
-        // ANONIMO
-        if ($mode === 'anonymous') {
-            $request->validate([
-                'privacy_accepted' => ['accepted'],
-                'quote_summary' => ['required', 'string'],
-                'quote_payload' => ['nullable'],
-            ]);
-
-            InboxConversation::create([
-                'source'              => 'quote',
-                'name'                => 'Preventivo anonimo',
-                'email'               => 'anonimo@stacknigro.it',
-                'phone'               => null,
-                'subject'             => 'Preventivo anonimo',
-                'how_found'           => null,
-                'user_message'        => $quoteSummary,     // qui mettiamo il riepilogo + totale
-                'privacy_accepted'    => 1,
-                'privacy_accepted_at' => now(),
-                'quote_payload'       => $quotePayload,
-                'ip_address'          => $request->ip(),
-                'user_agent'          => substr((string) $request->userAgent(), 0, 1000),
-            ]);
-
-            return back()->with('success', 'Preventivo calcolato in modo anonimo nessun dato è stato registrato.');
-        }
-
-        // INVIO CON DATI (form)
-        // QUI re-usi i campi della tua tabella inbox_conversations
-        $data = $request->validate([
-            'name'             => ['required', 'string', 'max:120'],
-            'email'            => ['required', 'email', 'max:190'],
-            'phone'            => ['nullable', 'string', 'max:50'],
-            'subject'          => ['nullable', 'string', 'max:180'],
-            'how_found'        => ['nullable', 'string', 'max:20'],
-            'user_message'     => ['nullable', 'string'], // nel partial magari è required, qui lo lascio soft
+        $rules = [
             'privacy_accepted' => ['accepted'],
             'quote_payload'    => ['nullable'],
             'quote_summary'    => ['nullable', 'string'],
-        ]);
+        ];
 
-        // user_message finale: se l’utente scrive qualcosa, lo teniamo + appendiamo riepilogo preventivo
-        $finalMessage = trim((string)($data['user_message'] ?? ''));
-        if ($finalMessage !== '') {
-            $finalMessage .= "\n\n---\n" . $quoteSummary;
-        } else {
-            $finalMessage = $quoteSummary;
+        if ($mode !== 'anonymous') {
+            $rules = array_merge($rules, [
+                'name'         => ['required', 'string', 'max:120'],
+                'email'        => ['required', 'email', 'max:190'],
+                'phone'        => ['nullable', 'string', 'max:50'],
+                'subject'      => ['nullable', 'string', 'max:180'],
+                'how_found'    => ['nullable', 'string', 'max:20'],
+                'user_message' => ['nullable', 'string'],
+            ]);
         }
 
+        $data = $request->validate($rules);
+
+        $quoteSummary = $request->input('quote_summary', '');
+        $quotePayload = $request->input('quote_payload');
+
+        if ($packageId) {
+            $package = QuotePackage::find($packageId);
+            if ($package) {
+                $packageInfo = "PACCHETTO SCELTO: {$package->name}\n";
+                $packageInfo .= "PREZZO PROMO: € " . number_format($package->promo_price, 2, ',', '.') . "\n";
+                $packageInfo .= "DESCRIZIONE: {$package->description}\n";
+
+                $quotePayload = json_encode(['package_id' => $package->id, 'package_name' => $package->name]);
+                $quoteSummary = $packageInfo . "\n---\n" . $quoteSummary;
+            }
+        }
+
+        $finalMessage = trim((string)($data['user_message'] ?? ''));
+        $finalMessage = ($finalMessage !== '') ? $finalMessage . "\n\n---\n" . $quoteSummary : $quoteSummary;
+
         InboxConversation::create([
-            'source'              => 'quote',
-            'name'                => $data['name'],
-            'email'               => $data['email'],
+          'source' => $packageId ? 'package' : 'quote',
+            'name'                => ($mode === 'anonymous') ? 'Preventivo anonimo' : $data['name'],
+            'email'               => ($mode === 'anonymous') ? 'anonimo@stacknigro.it' : $data['email'],
             'phone'               => $data['phone'] ?? null,
-            'subject'             => $data['subject'] ?? 'Richiesta preventivo',
+            'subject'             => $data['subject'] ?? ($packageId ? 'Acquisto Pacchetto' : 'Richiesta preventivo'),
             'how_found'           => $data['how_found'] ?? null,
             'user_message'        => $finalMessage,
             'privacy_accepted'    => 1,
@@ -147,6 +143,11 @@ class PublicQuoteController extends Controller
             'user_agent'          => substr((string) $request->userAgent(), 0, 1000),
         ]);
 
-        return back()->with('success', 'Preventivo inviato e salvato riceverai una risposta al più presto.');
+        $msg = ($mode === 'anonymous')
+            ? 'Preventivo calcolato in modo anonimo.'
+            : 'Richiesta inviata con successo! Ti risponderò al più presto.';
+
+        // Invece di back(), potresti voler tornare alla rotta pulita per resettare l'URL
+        return redirect()->route('public.quotes.index')->with('success', $msg);
     }
 }

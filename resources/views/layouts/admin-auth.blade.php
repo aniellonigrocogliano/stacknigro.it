@@ -8,6 +8,10 @@
   <link href="{{ asset('themes/admin/css/nucleo-icons.css') }}" rel="stylesheet" />
   <link href="{{ asset('themes/admin/css/nucleo-svg.css') }}" rel="stylesheet" />
   <link href="{{ asset('themes/admin/css/material-dashboard.min.css') }}" rel="stylesheet" />
+  <link rel="icon" type="image/png"
+      href="{{ $site?->favicon_path
+        ? asset('storage/'.$site->favicon_path).'?v='.($site->updated_at?->timestamp ?? time())
+        : asset('themes/bootslander/img/favicon.png') }}">
 </head>
 
 <body class="bg-gray-200">

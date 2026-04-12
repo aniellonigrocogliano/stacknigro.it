@@ -16,6 +16,14 @@
 
 <body class="bg-gray-200 g-sidenav-show">
 
+<div class="px-3 d-xl-none" style="padding-top:10px; padding-bottom:6px;">
+  <div class="d-flex justify-content-end">
+    <a href="javascript:;" id="iconNavbarSidenav" class="text-body" aria-label="Apri menu">
+      <i class="fa-solid fa-bars fa-lg"></i>
+    </a>
+  </div>
+</div>
+
   {{-- SIDEBAR --}}
   @include('admin.partials.sidebar')
 
@@ -42,11 +50,31 @@
     </div>
   </div>
 
+
+<a href="javascript:;" id="scrollTopBtn"
+   class="position-fixed d-flex align-items-center justify-content-center"
+   style="
+     right:20px;
+     bottom:20px;
+     width:48px;
+     height:48px;
+     background:#fff;
+     border-radius:50%;
+     box-shadow:0 4px 12px rgba(0,0,0,.2);
+     z-index:1100;
+     color:#344767;
+     text-decoration:none;
+   "
+   aria-label="Torna su">
+  <i class="fa-solid fa-arrow-up"></i>
+</a>
+
   {{-- CORE JS (SOLO QUI, NON NEL LOGIN) --}}
   <script src="{{ asset('themes/admin/js/core/popper.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/core/bootstrap.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/plugins/perfect-scrollbar.min.js') }}"></script>
   <script src="{{ asset('themes/admin/js/material-dashboard.min.js') }}"></script>
+  <script src="{{ asset('themes/admin/js/plugins/chartjs.min.js') }}"></script>
 
   {{-- AUTO-OPEN MODAL DA SESSION --}}
   <script>
@@ -70,6 +98,29 @@
     });
   </script>
 
+<script>
+(() => {
+  const btn = document.getElementById('scrollTopBtn');
+  if (!btn) return;
+
+  btn.addEventListener('click', (e) => {
+    e.preventDefault();
+
+    // scroll container (se esiste)
+    const main = document.querySelector('.main-content');
+    if (main) main.scrollTop = 0;
+
+    // fallback universali
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+
+
   @stack('scripts')
+
+
 </body>
 </html>

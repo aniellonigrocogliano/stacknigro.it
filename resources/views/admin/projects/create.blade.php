@@ -141,7 +141,7 @@
         {{-- Salva --}}
         <div class="mt-4 card">
           <div class="card-body">
-            <button type="submit" class="mb-0 btn bg-gradient-dark w-100">
+            <button type="submit" class="mb-0 btn btn-success w-100">
               <i class="fa-solid fa-floppy-disk me-2"></i> Salva progetto
             </button>
           </div>
@@ -186,55 +186,60 @@
       if (window.tinymce) tinymce.triggerSave();
     });
 
-    // TINYMCE SOLO SU DESCRIZIONE LUNGA (id resta long_description)
-    tinymce.remove('#long_description');
+   // TinyMCE su BODY
+tinymce.remove('#body');
 
-    tinymce.init({
-      selector: '#long_description',
-      height: 650,
-      resize: true,
-      menubar: true,
-      license_key: 'gpl',
+tinymce.init({
+  selector: '#body',
+  height: 350,
+  resize: true,
+  menubar: true,
+  license_key: 'gpl',
 
-      language: 'it',
-      language_url: "{{ asset('vendor/tinymce/langs/it.js') }}",
+  language: 'it',
+  language_url: "{{ asset('vendor/tinymce/langs/it.js') }}",
 
-      plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
-      toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | moreTag | code fullscreen preview',
+  plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount',
+  toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright | bullist numlist | link image media table | moreTag | code fullscreen preview',
 
-      images_upload_handler: (blobInfo, progress) => new Promise((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', "{{ route('admin.tinymce.upload') }}");
-        xhr.setRequestHeader('X-CSRF-TOKEN', "{{ csrf_token() }}");
+  // ✅ PERMETTE FONT AWESOME (icone)
+  extended_valid_elements: 'i[class|style|aria-hidden],span[class|style|aria-hidden]',
+  custom_elements: 'i,span',
+  verify_html: false,
 
-        xhr.upload.onprogress = (e) => {
-          if (e.total > 0) progress((e.loaded / e.total) * 100);
-        };
+  images_upload_handler: (blobInfo, progress) => new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', "{{ route('admin.tinymce.upload') }}");
+    xhr.setRequestHeader('X-CSRF-TOKEN', "{{ csrf_token() }}");
 
-        xhr.onload = () => {
-          if (xhr.status < 200 || xhr.status >= 300) {
-            reject('Upload fallito: ' + xhr.status);
-            return;
-          }
-          let json = {};
-          try { json = JSON.parse(xhr.responseText); } catch(e) {}
-          if (!json.location) return reject('Risposta server senza location');
-          resolve(json.location);
-        };
+    xhr.upload.onprogress = (e) => {
+      if (e.total > 0) progress((e.loaded / e.total) * 100);
+    };
 
-        xhr.onerror = () => reject('Errore di rete');
-
-        const formData = new FormData();
-        formData.append('file', blobInfo.blob(), blobInfo.filename());
-        xhr.send(formData);
-      }),
-
-      setup: function (editor) {
-        editor.ui.registry.addButton('moreTag', {
-          text: 'MORE',
-          onAction: () => editor.insertContent('\n<!--more-->\n')
-        });
+    xhr.onload = () => {
+      if (xhr.status < 200 || xhr.status >= 300) {
+        reject('Upload fallito: ' + xhr.status);
+        return;
       }
+      let json = {};
+      try { json = JSON.parse(xhr.responseText); } catch(e) {}
+      if (!json.location) return reject('Risposta server senza location');
+      resolve(json.location);
+    };
+
+    xhr.onerror = () => reject('Errore di rete');
+
+    const formData = new FormData();
+    formData.append('file', blobInfo.blob(), blobInfo.filename());
+    xhr.send(formData);
+  }),
+
+  setup: function (editor) {
+    editor.ui.registry.addButton('moreTag', {
+      text: 'MORE',
+      onAction: () => editor.insertContent('\n<!--more-->\n')
     });
+  }
+});
   </script>
 @endpush

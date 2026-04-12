@@ -35,26 +35,40 @@ class SiteSettingsController extends Controller
     $settings->hero_title = $data['hero_title'] ?? null;
     $settings->hero_subtitle = $data['hero_subtitle'] ?? null;
 
-    if ($request->hasFile('logo')) {
-        // 1) salva logo
-        $logoPath = $request->file('logo')->store('site', 'public'); // site/xxxx.png
+if ($request->hasFile('logo')) {
 
-        // 2) genera favicon 32x32 PNG
-        $faviconRelPath = 'site/favicon-32.png';
-        $faviconAbsPath = storage_path('app/public/' . $faviconRelPath);
+    $disk = Storage::disk('public');
+    $dir  = 'site';
 
-        $manager = new ImageManager(new Driver());
-        $img = $manager->read(Storage::disk('public')->path($logoPath));
+    $logoRelPath    = "$dir/logo.webp";
+    $faviconRelPath = "$dir/favicon-32.png";
 
-        // Nota: toPng() = sempre favicon png
-        $img->resize(32, 32)->toPng()->save($faviconAbsPath);
+    // elimina vecchi file (nomi fissi)
+    $disk->delete([$logoRelPath, $faviconRelPath]);
 
-        // 3) salva path nel DB
-        $settings->logo_path = $logoPath;
-        $settings->favicon_path = $faviconRelPath;
-    }
+    $manager = new ImageManager(new Driver());
+    $img = $manager->read($request->file('logo')->getRealPath());
 
-    $settings->save();
+    // LOGO: WebP con trasparenza (se presente nel file sorgente)
+    // (niente flatten/background!)
+    $logoBytes = (string) $img
+        ->scaleDown(width: 600)   // scegli tu la width
+        ->toWebp(85);             // qualità
+
+    $disk->put($logoRelPath, $logoBytes);
+
+    // FAVICON: meglio PNG, e qui puoi fare crop senza deformare
+    $faviconBytes = (string) $img
+        ->cover(32, 32)
+        ->toPng();
+
+    $disk->put($faviconRelPath, $faviconBytes);
+
+    $settings->logo_path = $logoRelPath;       // site/logo.webp
+    $settings->favicon_path = $faviconRelPath; // site/favicon-32.png
+}
+
+$settings->save();
 
     return back()->with('success', 'Salvato!');
 }

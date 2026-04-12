@@ -9,14 +9,15 @@ class PublicProjectController extends Controller
     public function index()
     {
         $projects = Project::query()
-            ->where('is_published', 1)
-            ->with(['images' => function ($q) {
-                $q->orderByDesc('is_cover')
-                  ->orderBy('sort_order')
-                  ->orderBy('id');
-            }])
-            ->orderByDesc('id') // più recente prima
-            ->paginate(12);
+    ->where('is_published', 1)
+    ->with(['images' => function ($q) {
+        $q->orderByDesc('is_cover')
+          ->orderBy('sort_order')
+          ->orderBy('id');
+    }])
+    ->orderBy('sort_order', 'asc')
+    ->orderByDesc('id')
+    ->paginate(12);
 
         return view('public.projects.index', compact('projects'));
     }

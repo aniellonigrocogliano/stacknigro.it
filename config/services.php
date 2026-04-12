@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'sn_captcha' => [
+  'secret' => env('SN_CAPTCHA_SECRET'),
+  'verify_url' => env('SN_CAPTCHA_VERIFY_URL', 'https://captcha.stacknigro.it/api/siteverify.php'),
+],
 
 ];

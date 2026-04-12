@@ -16,10 +16,15 @@ class ContactController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required','string','max:80'],
-            'fa_icon' => ['nullable','string','max:80'],
-            'value' => ['required','string','max:190'],
+            'name' => ['required', 'string', 'max:80'],
+            'fa_icon' => ['nullable', 'string', 'max:80'],
+            'value' => ['required', 'string', 'max:190'],
+            'href' => ['nullable', 'string', 'max:255'],
+            'target_blank' => ['nullable', 'boolean'],
         ]);
+
+        // checkbox: se non arriva → 0
+        $data['target_blank'] = $request->boolean('target_blank');
 
         // sort automatico in coda
         $data['sort'] = (int) Contact::max('sort') + 1;
@@ -32,10 +37,15 @@ class ContactController extends Controller
     public function update(Request $request, Contact $contact)
     {
         $data = $request->validate([
-            'name' => ['required','string','max:80'],
-            'fa_icon' => ['nullable','string','max:80'],
-            'value' => ['required','string','max:190'],
+            'name' => ['required', 'string', 'max:80'],
+            'fa_icon' => ['nullable', 'string', 'max:80'],
+            'value' => ['required', 'string', 'max:190'],
+            'href' => ['nullable', 'string', 'max:255'],
+            'target_blank' => ['nullable', 'boolean'],
         ]);
+
+        // checkbox: se non arriva → 0
+        $data['target_blank'] = $request->boolean('target_blank');
 
         $contact->update($data);
 
@@ -47,4 +57,19 @@ class ContactController extends Controller
         $contact->delete();
         return back()->with('success', 'Contatto eliminato.');
     }
+
+    public function reorder(Request $request)
+{
+    $data = $request->validate([
+        'ids' => ['required', 'array'],
+        'ids.*' => ['integer', 'exists:contacts,id'],
+    ]);
+
+    foreach ($data['ids'] as $index => $id) {
+        Contact::where('id', $id)->update(['sort' => $index + 1]);
+    }
+
+    return response()->json(['ok' => true]);
+}
+
 }

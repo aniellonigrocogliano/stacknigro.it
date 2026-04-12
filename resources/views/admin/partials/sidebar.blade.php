@@ -17,11 +17,15 @@
        id="iconSidenav"></i>
 
     <a class="px-4 py-3 m-0 navbar-brand" href="{{ url('/admin') }}">
-<img src="{{ $site?->logo_path ? asset('storage/'.$site->logo_path) : asset('themes/admin/img/logo-ct-dark.png') }}"
-     class="navbar-brand-img"
-     width="26"
-     height="26"
-     alt="logo">
+<img
+  src="{{ $site?->logo_path
+    ? asset('storage/'.$site->logo_path).'?v='.($site->updated_at?->timestamp ?? time())
+    : asset('themes/admin/img/logo-ct-dark.png') }}"
+  class="navbar-brand-img"
+  width="26"
+  height="26"
+  alt="logo">
+
       <span class="text-sm ms-1 text-dark">Stacknigro Admin</span>
     </a>
   </div>
@@ -84,7 +88,14 @@
           <span class="nav-link-text ms-1">Progetti</span>
         </a>
       </li>
-
+{{-- DOWNLOAD CENTER --}}
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/download*') ? 'active' : '' }}"
+     href="{{ route('admin.download.items.index') }}">
+    <i class="fa-solid fa-download opacity-5"></i>
+    <span class="nav-link-text ms-1">Download</span>
+  </a>
+</li>
 {{-- PREVENTIVI --}}
 
 <li class="nav-item">
@@ -105,6 +116,14 @@
     @if($inboxUnread > 0)
       <span class="badge bg-info ms-auto">{{ $inboxUnread }}</span>
     @endif
+  </a>
+</li>
+{{-- CAPTCHA --}}
+<li class="nav-item">
+  <a class="nav-link text-dark {{ request()->is('admin/captcha-sites*') ? 'active' : '' }}"
+     href="{{ url('/admin/captcha-sites') }}">
+    <i class="fa-solid fa-shield-halved opacity-5"></i>
+    <span class="nav-link-text ms-1">CAPTCHA</span>
   </a>
 </li>
 {{-- POLICY & COOKIE --}}
